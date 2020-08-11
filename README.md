@@ -31,14 +31,17 @@ The local tracker accepts one of the quadrants of the mcherry video sequence.
 
 To download a sample for analysis:
 
-Go to: [NFFA Repository](https://datashare.nffa.eu/index.php/s/gaApTTQqeyAByLk)
+```bash
+cd data
+./download-data.sh
+```
 
 To run an analysis over the sample (assume the sample name is loaded in 
 `SAMPLE`):
 
 ```bash
 cd src/LocalTracker
-./main.py --input $SAMPLE --draw_detection=1 --draw_tracking=1
+./main.py --input ../../data/$SAMPLE --draw_detection=1 --draw_tracking=1
 ```
 
 The modifiers for `main.py` are:

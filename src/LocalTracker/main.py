@@ -31,62 +31,7 @@ import time
 import detector
 import tracker
 import drawutils
-
-def add_offset(roi, offset):
-  p1 = (roi[0][0] + offset[0], roi[0][1] + offset[1])
-  p2 = (roi[1][0] + offset[0], roi[1][1] + offset[1])
-  return (p1, p2)
-
-def roi_chopper(gray, bbox):
-  # Crop the image to the roi
-  p1, p2 = bbox
-
-  x1, y1 = p1
-  x2, y2 = p2
-  if x1 < 0:
-    x1 = 0
-  if y1 < 0:
-    y1 = 0
-    
-  roi_gray = gray[y1:y2, x1:x2]
-  
-  return roi_gray, (x1, y1)
-
-def detect_within_roi_tracker(gray, trackers):
-  # Explore trackers
-  detection_offset_bbs = []
-  for tracker in trackers:
-    
-    roi_gray, offset = roi_chopper(gray, tracker.roi)
-    
-    # Detect within roi
-    if roi_gray.shape[0] == 0 or roi_gray.shape[1] == 0:
-      continue
-    
-    size = (int(gray.shape[0] / 2), int(gray.shape[1] / 2))
-    detection_bbs = detector.detect(roi_gray, 1, size)
-    for i in detection_bbs:
-      detection_offset_bbs.append(add_offset(i, offset))
-      
-  return detection_offset_bbs
-
-def detect_within_roi_detection(gray, bbs):
-  # Explore trackers
-  detection_offset_bbs = []
-  for bbox in bbs:
-    
-    roi_gray, offset = roi_chopper(gray, bbox)
-    
-    # Detect within roi
-    if roi_gray.shape[0] == 0 or roi_gray.shape[1] == 0:
-      continue
-    
-    size = (int(gray.shape[0] / 4), int(gray.shape[1] / 4))
-    detection_bbs = detector.detect(roi_gray, 1, size)
-    for i in detection_bbs:
-      detection_offset_bbs.append(add_offset(i, offset))
-      
-  return detection_offset_bbs
+import matcher
 
 def main(args):
   # Open the video
@@ -120,8 +65,10 @@ def main(args):
       tracker.updateTrackers(frame, trackers)
       
     # Detection - Per tracker
-    subdetections_tracking = detect_within_roi_tracker(gray_detect2, trackers)
-    subdetections_detector = detect_within_roi_detection(gray_detect3, detection_bbs)
+    tracking_bbs = tracker.retrieveBBs(trackers)
+    subdetections_tracking = detector.detect_within_roi(gray_detect2, tracking_bbs)
+    subdetections_detector = \
+        matcher.match_overlaps(detector.detect_within_roi(gray_detect3, detection_bbs))
 
     
     # Draw on demand
@@ -144,7 +91,7 @@ def main(args):
     counter += 1
     cv.waitKey(1)
 
-    time.sleep(0.5)
+    #time.sleep(0.5)
     
   cv.destroyAllWindows()
   

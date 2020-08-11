@@ -19,7 +19,7 @@ To install them using a conda environment:
 conda create mhpc
 conda activate mhpc
 # Install dependencies
-conda install numpy matplotlib scikit-learn scikit-image
+conda install numpy matplotlib scikit-learn scikit-image shapely
 conda install -c conda-forge opencv
 ```
 

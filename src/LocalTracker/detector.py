@@ -171,3 +171,69 @@ def detect(img, batches=2, size=None):
     maxima = locate_maxima(otsu, k)
     # Get the bounding boxes
     return bounding_boxes(maxima, size)
+
+def add_offset(roi, offset):
+  '''
+  Add the proper offset to the roi
+
+  Parameters:
+  * roi: bounding box referred to another bounding box
+  * offset: offset of the outter bounding box
+
+  Returns:
+  * new roi in the global image
+  '''
+  p1 = (roi[0][0] + offset[0], roi[0][1] + offset[1])
+  p2 = (roi[1][0] + offset[0], roi[1][1] + offset[1])
+  return (p1, p2)
+
+def roi_chopper(gray, bbox):
+  '''
+  Crops the image to get the ROI of interest for the subdetection
+
+  Parameters:
+  * gray: grayscale image
+  * bbox: bounding box to crop
+
+  Returns:
+  * cropped ROI
+  '''
+  # Crop the image to the roi
+  p1, p2 = bbox
+
+  x1, y1 = p1
+  x2, y2 = p2
+  if x1 < 0:
+    x1 = 0
+  if y1 < 0:
+    y1 = 0
+    
+  roi_gray = gray[y1:y2, x1:x2]
+  return roi_gray, (x1, y1)
+
+def detect_within_roi(gray, bbs):
+  '''
+  Gets new bounding boxes withing the global detections/tracking elements
+
+  Parameters:
+  * gray: grayscale image
+  * bbs: bounding boxes to detect within the gray image
+
+  Returns:
+  * new bounding boxes with the proper offset
+  '''
+  detection_offset_bbs = []
+  for bbox in bbs:
+    
+    roi_gray, offset = roi_chopper(gray, bbox)
+    
+    # Detect within roi
+    if roi_gray.shape[0] == 0 or roi_gray.shape[1] == 0:
+      continue
+    
+    size = (int(gray.shape[0] / 2), int(gray.shape[1] / 2))
+    detection_bbs = detect(roi_gray, 1, size)
+    for i in detection_bbs:
+      detection_offset_bbs.append(add_offset(i, offset))
+      
+  return detection_offset_bbs

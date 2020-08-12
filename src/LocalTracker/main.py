@@ -31,62 +31,7 @@ import time
 import detector
 import tracker
 import drawutils
-
-def add_offset(roi, offset):
-  p1 = (roi[0][0] + offset[0], roi[0][1] + offset[1])
-  p2 = (roi[1][0] + offset[0], roi[1][1] + offset[1])
-  return (p1, p2)
-
-def roi_chopper(gray, bbox):
-  # Crop the image to the roi
-  p1, p2 = bbox
-
-  x1, y1 = p1
-  x2, y2 = p2
-  if x1 < 0:
-    x1 = 0
-  if y1 < 0:
-    y1 = 0
-    
-  roi_gray = gray[y1:y2, x1:x2]
-  
-  return roi_gray, (x1, y1)
-
-def detect_within_roi_tracker(gray, trackers):
-  # Explore trackers
-  detection_offset_bbs = []
-  for tracker in trackers:
-    
-    roi_gray, offset = roi_chopper(gray, tracker.roi)
-    
-    # Detect within roi
-    if roi_gray.shape[0] == 0 or roi_gray.shape[1] == 0:
-      continue
-    
-    size = (int(gray.shape[0] / 2), int(gray.shape[1] / 2))
-    detection_bbs = detector.detect(roi_gray, 1, size)
-    for i in detection_bbs:
-      detection_offset_bbs.append(add_offset(i, offset))
-      
-  return detection_offset_bbs
-
-def detect_within_roi_detection(gray, bbs):
-  # Explore trackers
-  detection_offset_bbs = []
-  for bbox in bbs:
-    
-    roi_gray, offset = roi_chopper(gray, bbox)
-    
-    # Detect within roi
-    if roi_gray.shape[0] == 0 or roi_gray.shape[1] == 0:
-      continue
-    
-    size = (int(gray.shape[0] / 4), int(gray.shape[1] / 4))
-    detection_bbs = detector.detect(roi_gray, 1, size)
-    for i in detection_bbs:
-      detection_offset_bbs.append(add_offset(i, offset))
-      
-  return detection_offset_bbs
+import matcher
 
 def main(args):
   # Open the video
@@ -101,7 +46,8 @@ def main(args):
     if not ret:
       break
     
-    subtrackers = []
+    detection_bbs = []
+    new_detections = []
     frame = cv.resize(big_frame, (640,480))
     
     # Grayscale
@@ -110,33 +56,27 @@ def main(args):
     gray_detect2 = copy.deepcopy(gray_detect)
     gray_detect3 = copy.deepcopy(gray_detect)
     
-    # Detection - Top detection
-    detection_bbs = detector.detect(gray_detect)
-    
-    # Tracking - Top tracking
-    if args.sample_tracking == counter:
-      trackers = tracker.deployTrackers(frame, detection_bbs, trackers)
-    else:
-      tracker.updateTrackers(frame, trackers)
+    # Detection - Refresh tracking
+    if counter % args.sample_detection:
+      detection_bbs = detector.detect(gray_detect)
+      new_detections = matcher.inter_match(detection_bbs, tracking_bbs)
+      trackers = tracker.deployTrackers(frame, new_detections, trackers)
       
-    # Detection - Per tracker
-    subdetections_tracking = detect_within_roi_tracker(gray_detect2, trackers)
-    subdetections_detector = detect_within_roi_detection(gray_detect3, detection_bbs)
+    # Update the trackers
+    tracker.updateTrackers(frame, trackers)
+    tracking_bbs = tracker.retrieveBBs(trackers)
 
-    
     # Draw on demand
     if args.draw_detection:
+      detection_bbs = detector.detect(gray_detect)
       detections_frame = copy.deepcopy(frame)
       detections_frame = drawutils.draw_detections(detections_frame, detection_bbs)   
-      detections_frame = drawutils.draw_detections(detections_frame, subdetections_detector, (0,0,255))   
-      #detections_frame = cv.resize(detections_frame, (320,240))
       cv.imshow("Detection", detections_frame)
       
     if args.draw_tracking:
       tracking_frame = copy.deepcopy(frame)
       tracking_frame = drawutils.draw_trackers(tracking_frame, trackers)
-      tracking_frame = drawutils.draw_detections(tracking_frame, subdetections_tracking, (0,0,255))
-      #tracking_frame = cv.resize(tracking_frame, (320,240))
+      tracking_frame = drawutils.draw_detections(tracking_frame, new_detections, (0,0,255))
       cv.imshow("Tracking", tracking_frame)
       
     output_frame = cv.resize(frame, (320,240))
@@ -144,7 +84,7 @@ def main(args):
     counter += 1
     cv.waitKey(1)
 
-    time.sleep(0.5)
+    #time.sleep(0.5)
     
   cv.destroyAllWindows()
   
@@ -159,8 +99,11 @@ if __name__ == "__main__":
   parser.add_argument('--draw_tracking', type=bool,
                         help='Enable the tracking bbs', default=False)
   parser.add_argument('--sample_tracking', type=int,
-                        help='Determine how many samples needed to update the tracker',
-                        default=20)
+                        help='Determine how many samples needed to purge the tracker',
+                        default=30)
+  parser.add_argument('--sample_detection', type=int,
+                        help='Determine how many samples needed to update the detection',
+                        default=3)
   
   args = parser.parse_args()
   

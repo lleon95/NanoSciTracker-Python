@@ -37,7 +37,7 @@ class Tracker:
         self.tracker = cv.TrackerKCF_create()
         self.colour = colour
         self.roi = None
-        self.timeout = 5
+        self.timeout = timeout
         
     def init(self, frame, roi):
         self.roi = roi
@@ -69,11 +69,16 @@ def updateTrackers(frame, trackers):
             i += 1
     return trackers
 
-
-
 def deployTrackers(colour, bb_list, trackers):
     for i in bb_list:
         tracker = Tracker((0,255,0))
         tracker.init(colour, i)
         trackers.append(tracker)
     return trackers
+
+def retrieveBBs(trackers):
+    bounding_boxes = []
+    for tracker in trackers:
+        bounding_boxes.append(tracker.roi)
+    return bounding_boxes
+    

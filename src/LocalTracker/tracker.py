@@ -37,7 +37,7 @@ class Tracker:
         self.tracker = cv.TrackerKCF_create()
         self.colour = colour
         self.roi = None
-        self.timeout = 5
+        self.timeout = timeout
         
     def init(self, frame, roi):
         self.roi = roi

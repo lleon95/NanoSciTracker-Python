@@ -46,7 +46,8 @@ def main(args):
     if not ret:
       break
     
-    subtrackers = []
+    detection_bbs = []
+    new_detections = []
     frame = cv.resize(big_frame, (640,480))
     
     # Grayscale
@@ -55,35 +56,27 @@ def main(args):
     gray_detect2 = copy.deepcopy(gray_detect)
     gray_detect3 = copy.deepcopy(gray_detect)
     
-    # Detection - Top detection
-    detection_bbs = detector.detect(gray_detect)
-    
-    # Tracking - Top tracking
-    if args.sample_tracking == counter:
-      trackers = tracker.deployTrackers(frame, detection_bbs, trackers)
-    else:
-      tracker.updateTrackers(frame, trackers)
+    # Detection - Refresh tracking
+    if counter % args.sample_detection:
+      detection_bbs = detector.detect(gray_detect)
+      new_detections = matcher.inter_match(detection_bbs, tracking_bbs)
+      trackers = tracker.deployTrackers(frame, new_detections, trackers)
       
-    # Detection - Per tracker
+    # Update the trackers
+    tracker.updateTrackers(frame, trackers)
     tracking_bbs = tracker.retrieveBBs(trackers)
-    subdetections_tracking = detector.detect_within_roi(gray_detect2, tracking_bbs)
-    subdetections_detector = \
-        matcher.match_overlaps(detector.detect_within_roi(gray_detect3, detection_bbs))
 
-    
     # Draw on demand
     if args.draw_detection:
+      detection_bbs = detector.detect(gray_detect)
       detections_frame = copy.deepcopy(frame)
       detections_frame = drawutils.draw_detections(detections_frame, detection_bbs)   
-      detections_frame = drawutils.draw_detections(detections_frame, subdetections_detector, (0,0,255))   
-      #detections_frame = cv.resize(detections_frame, (320,240))
       cv.imshow("Detection", detections_frame)
       
     if args.draw_tracking:
       tracking_frame = copy.deepcopy(frame)
       tracking_frame = drawutils.draw_trackers(tracking_frame, trackers)
-      tracking_frame = drawutils.draw_detections(tracking_frame, subdetections_tracking, (0,0,255))
-      #tracking_frame = cv.resize(tracking_frame, (320,240))
+      tracking_frame = drawutils.draw_detections(tracking_frame, new_detections, (0,0,255))
       cv.imshow("Tracking", tracking_frame)
       
     output_frame = cv.resize(frame, (320,240))
@@ -106,8 +99,11 @@ if __name__ == "__main__":
   parser.add_argument('--draw_tracking', type=bool,
                         help='Enable the tracking bbs', default=False)
   parser.add_argument('--sample_tracking', type=int,
-                        help='Determine how many samples needed to update the tracker',
-                        default=20)
+                        help='Determine how many samples needed to purge the tracker',
+                        default=30)
+  parser.add_argument('--sample_detection', type=int,
+                        help='Determine how many samples needed to update the detection',
+                        default=3)
   
   args = parser.parse_args()
   

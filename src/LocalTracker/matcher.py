@@ -22,6 +22,7 @@
 # Master in High-Performance Computing - SISSA
 
 from shapely.geometry import Polygon
+import numpy as np
 
 def compute_area(bbox):
     p1, p2 = bbox
@@ -29,9 +30,31 @@ def compute_area(bbox):
     h = p2[1] - p1[1]
     return w * h
 
-def calculate_iou(b1, b2):
+def calculate_cd(b1, b2):
     '''
-    Computes the IoU of the bounding boxes
+    Computes the distance of the centers
+
+    Params:
+    * b1, b2: bounding boxes
+
+    Returns:
+    * L2 distance
+    '''
+    p1_1, p2_1 = b1
+    p1_2, p2_2 = b2
+
+    c1 = ((p1_1[0] + p2_1[0])/2, (p1_1[1] + p2_1[1])/2)
+    c2 = ((p1_2[0] + p2_2[0])/2, (p1_2[1] + p2_2[1])/2)
+
+    dx = c1[0] - c2[0]
+    dy = c1[1] - c2[1]
+
+    d = (dx * dx) + (dy * dy)
+    return np.sqrt(d)
+
+def calculate_iom(b1, b2):
+    '''
+    Computes the IoM of the bounding boxes
 
     Params:
     * b1, b2: bounding boxes
@@ -55,61 +78,49 @@ def calculate_iou(b1, b2):
     poly_1 = poly_1.buffer(0)
     poly_2 = poly_2.buffer(0)
 
-    # Compute the union
+    # Argmin of the union to compute the overlap in case of containing
     union = min(poly_1.area, poly_2.area)
 
     if union == 0:
         return 0
 
-    iou = poly_1.intersection(poly_2).area / union
-    if (iou > 0.001):
-        print(iou)
-    return iou
+    iom = poly_1.intersection(poly_2).area / union
+    return iom
 
 
-def match_overlaps(bbs, max_overlap=0.10):
-    '''
-    Matches the bounding boxes within a detection/tracking process. It returns
-    the bounding boxes with all the ambiguities solved
-
-    Parameters:
-    * bbs: bounding boxes to analyse in
-
-    Returns:
-    * bounding boxes withou ambiguities
-
-    Enhacement opportunity: reduce the O(n) order by an unsorted map or similar
-    '''
-    solve = []
-    for b1 in bbs:
-        # Compute the area of the b1
-        p1_1, p2_1 = b1
-        a1 = compute_area(b1)
-        overlap = False
-
-        # See if the points are within the area
-        for b2 in bbs:
-            # Skip if it's going to compare against itself
-            if b1 == b2:
-                continue
-
-            # Look if there is an intersection
-            iou = calculate_iou(b1, b2)
-            if iou > max_overlap:
-                overlap = True
-                continue
-            # If so
-            a2 = compute_area(b2)
-
-            # Choose the bigger - a2 will be analysed later
-            
-        if not overlap:
-            solve.append(b1)
-    return solve
-            
-
-def match_bbs(detection_bbs, tracking_bbs):
+def inter_match(detection_bbs, tracking_bbs, threshold={"iom": 0.25, "cd":64}):
     '''
     Matches the bounding boxes
+
+    Parameters:
+    * detection_bbs: New detections
+    * tracking_bbs: Trackers
+    * threshold: Threshold to discriminate new detections
+
+    Return:
+    * Valid new detections
     '''
-    pass
+    valid = []
+    for detection in detection_bbs:
+        # Compute the area of the detection
+        p1_1, p2_1 = detection
+        a1 = compute_area(detection)
+        overlap = False
+
+        for tracker in tracking_bbs:
+            # Look if there is an intersection
+            iou = calculate_iom(detection, tracker)
+            if iou > threshold["iom"]:
+                overlap = True
+
+            # Look if the new detection is close to a tracker
+            cd = calculate_cd(detection, tracker)
+            if cd < threshold["cd"]:
+                overlap = True
+
+            if overlap:
+                break
+
+        if not overlap:
+            valid.append(detection)
+    return valid

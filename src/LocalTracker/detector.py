@@ -94,7 +94,7 @@ def compute_k(size):
     
     return k1
 
-def get_bbs(labels, padding=32, min_size=16):
+def get_bbs(labels, padding=32, min_size=16, max_size=64):
     """
     Get the BBoxes list
     """
@@ -106,7 +106,8 @@ def get_bbs(labels, padding=32, min_size=16):
         nonzeroy = np.array(nonzero[0])
         nonzerox = np.array(nonzero[1])
         # Define a bounding box based on min/max x and y
-        if (np.max(nonzerox) - np.min(nonzerox)) >= min_size and (np.max(nonzerox) - np.min(nonzerox)) >= min_size:
+        if (np.max(nonzerox) - np.min(nonzerox)) >= min_size and (np.max(nonzerox) - np.min(nonzerox)) < max_size \
+            and (np.max(nonzerox) - np.min(nonzerox)) >= min_size and (np.max(nonzerox) - np.min(nonzerox))< max_size:
             bbox = ((np.min(nonzerox)-padding, np.min(nonzeroy)-padding), (np.max(nonzerox)+padding, np.max(nonzeroy)+padding))
             bb_list.append((bbox[0], bbox[1]))
     return bb_list

@@ -45,3 +45,17 @@ def draw_detections(frame, bbs, colour=(255,0,0)):
     for i in bbs:
         cv.rectangle(frame, i[0], i[1], colour, 3)
     return frame
+
+'''
+Cropping tools
+'''
+def crop_roi(frame, roi):
+    x1 = roi[0][0]
+    y1 = roi[0][1]
+    if x1 < 0:
+        x1 = 0
+    if y1 < 0:
+        y1 = 0
+    x2 = roi[1][0]
+    y2 = roi[1][1]
+    return frame[y1:y2, x1:x2]

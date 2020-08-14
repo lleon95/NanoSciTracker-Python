@@ -32,23 +32,67 @@ def computeTrackerRoi(roi):
     y2 = roi[1][1]
     return (x1, y1, x2 - x1, y2 - y1)
 
+def computeCenterRoi(roi):
+    x1 = roi[0][0]
+    y1 = roi[0][1]
+    x2 = roi[1][0]
+    y2 = roi[1][1]
+    # Compute center
+    xc = (x2 + x1)/2.
+    yc = (y2 + y1)/2.
+    return (xc, yc)
+
+class SpeedFeature():
+    def __init__(self):
+        # Feature - speed
+        self.speed = -1
+        self.speed_vector = list([])
+        self.speed_counter = 0
+        self.mobile_mean_param = 10
+
+    def _compute(self):
+        if self.speed_counter < self.mobile_mean_param:
+            return -1
+        
+        self.speed = np.mean(np.gradient(np.array(self.speed_vector), 1))
+        return self.speed
+
+    def add_sample(self, position):
+        self.speed_counter += 1
+        if len(self.speed_vector) > self.mobile_mean_param:
+            self.speed_vector.pop(0)
+        self.speed_vector.append(position)
+        return self._compute()
+
 class Tracker:
     def __init__(self, colour, timeout=5):
         self.tracker = cv.TrackerKCF_create()
         self.colour = colour
         self.roi = None
         self.timeout = timeout
+        # Features
+        self.speed = (SpeedFeature(), SpeedFeature()) # (x,y)
+        
         
     def init(self, frame, roi):
         self.roi = roi
         return self.tracker.init(frame, computeTrackerRoi(roi))
     
+    def _update_speed(self):
+        xc, yc = computeCenterRoi(self.roi)
+        dx, dy = self.speed
+        dx.add_sample(xc)
+        dy.add_sample(yc)
+
     def update(self, frame):
         ok, bbox = self.tracker.update(frame)
         p1 = (int(bbox[0]), int(bbox[1]))
         p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
 
         self.roi = (p1, p2)
+
+        # Update features
+        self._update_speed()
 
         if self.timeout == 0:
             return False

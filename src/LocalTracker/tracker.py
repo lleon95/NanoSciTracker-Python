@@ -42,13 +42,16 @@ def computeCenterRoi(roi):
     yc = (y2 + y1)/2.
     return (xc, yc)
 
+def computeDirection(dx, dy):
+    return np.arctan2(dy, dx)
+
 class SpeedFeature():
     def __init__(self):
         # Feature - speed
         self.speed = -1
         self.speed_vector = list([])
         self.speed_counter = 0
-        self.mobile_mean_param = 10
+        self.mobile_mean_param = 30
 
     def _compute(self):
         if self.speed_counter < self.mobile_mean_param:
@@ -72,6 +75,7 @@ class Tracker:
         self.timeout = timeout
         # Features
         self.speed = (SpeedFeature(), SpeedFeature()) # (x,y)
+        self.direction = 0
         
         
     def init(self, frame, roi):
@@ -81,9 +85,11 @@ class Tracker:
     def _update_speed(self):
         xc, yc = computeCenterRoi(self.roi)
         dx, dy = self.speed
-        dx.add_sample(xc)
-        dy.add_sample(yc)
-
+        dx_v = dx.add_sample(xc)
+        dy_v = dy.add_sample(yc)
+        if dx_v != 0.:
+            self.direction = computeDirection(dx_v, dy_v)
+         
     def update(self, frame):
         ok, bbox = self.tracker.update(frame)
         p1 = (int(bbox[0]), int(bbox[1]))

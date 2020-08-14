@@ -58,12 +58,12 @@ def compute_hog(gray, tracker):
     y2 = tracker.roi[1][1]
     padding = tracker.hog_padding
     area = tracker.hog_area
-    hog_ = None
+    
+    hog_ = hog(gray, orientations=17, pixels_per_cell=(y2-y1, x2-x1),
+        cells_per_block=(1, 1), feature_vector=True)
 
-    if x1 > padding[0] and y1 > padding[1] and \
-        x2 < (area[0] - padding[0]) and y2 < (area[1] - padding[1]):
-        hog_ = hog(gray, orientations=9, pixels_per_cell=(8, 8),
-            cells_per_block=(1, 1), feature_vector=True)
+    if len(hog_) == 0:
+        hog_ = None
     return hog_
 
 class SpeedFeature():

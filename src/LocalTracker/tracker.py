@@ -93,6 +93,7 @@ class Tracker:
         self.tracker = cv.TrackerKCF_create()
         self.colour = colour
         self.roi = None
+        self.orig_roi  = None
         self.timeout = timeout
 
         # Hyperparams
@@ -115,6 +116,7 @@ class Tracker:
         
     def init(self, frame, roi, stable=True):
         self.roi = roi
+        self.orig_roi = roi
         tracker_roi = computeTrackerRoi(roi)
 
         # Initialise some features

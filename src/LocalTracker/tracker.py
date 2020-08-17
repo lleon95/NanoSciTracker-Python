@@ -108,8 +108,12 @@ class Tracker:
         self.direction = 0
         self.histogram = None
         self.hog = None
+        self.position = None
+
+        # State
+        self.stable = True
         
-    def init(self, frame, roi):
+    def init(self, frame, roi, stable=True):
         self.roi = roi
         tracker_roi = computeTrackerRoi(roi)
 
@@ -119,11 +123,15 @@ class Tracker:
         self.histogram = compute_histogram(gray)
         self.hog = compute_hog(gray, self)
 
+        # Set the flag
+        self.stable = stable
+
         # Initialise tracker
         return self.tracker.init(frame, tracker_roi)
     
     def _update_speed(self):
-        xc, yc = computeCenterRoi(self.roi)
+        self.position = computeCenterRoi(self.roi)
+        xc, yc = self.position
         dx, dy = self.speed
         dx_v = dx.add_sample(xc)
         dy_v = dy.add_sample(yc)
@@ -144,7 +152,7 @@ class Tracker:
                 self.hog = self.hog * (1 - self.hog_lr) + \
                     self.hog_lr * hog1
          
-    def update(self, frame):
+    def update(self, frame, ROI=None):
         ok, bbox = self.tracker.update(frame)
         p1 = (int(bbox[0]), int(bbox[1]))
         p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
@@ -158,8 +166,15 @@ class Tracker:
 
         # Update features
         self._update_speed()
-        self._update_histogram(gray)
-        self._update_hog(gray)
+        xc, yc = self.position
+
+        if not ROI is None:
+            if xc >= ROI[0] and xc <= ROI[2] and yc >= ROI[1] and yc <= ROI[3]:
+                self._update_histogram(gray)
+                self._update_hog(gray)
+        else:
+            self._update_histogram(gray)
+            self._update_hog(gray)
 
         if self.timeout == 0:
             return False
@@ -167,12 +182,12 @@ class Tracker:
             self.timeout -= 1
         return True
     
-def updateTrackers(frame, trackers):
+def updateTrackers(frame, trackers, ROI=None):
     i = 0
     length = len(trackers)
     
     while i < length:
-        state = trackers[i].update(frame)
+        state = trackers[i].update(frame, ROI)
         if not state:
             length -= 1
             del trackers[i]

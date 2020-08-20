@@ -26,7 +26,7 @@ from skimage.feature import hog
 from features.feature import Feature
 
 class Hog(Feature):
-    def __init__(self, padding=(64, 64), area=(640,480), lr=0.1):
+    def __init__(self, padding=(64, 64), area=(640,480), lr=0.2):
         super().__init__()
         self.hog = None
 

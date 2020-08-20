@@ -41,7 +41,7 @@ def computeTrackerRoi(roi):
 
 class Tracker:
     def __init__(self, colour, timeout=5):
-        self.tracker = cv.TrackerMOSSE_create()
+        self.tracker = cv.TrackerKCF_create()
         self.colour = colour
         self.roi = None
         self.orig_roi  = None

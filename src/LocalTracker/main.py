@@ -62,31 +62,42 @@ def main(args):
     gray_detect3 = copy.deepcopy(gray_detect)
     
     # Detection - Refresh tracking
-    '''
     if counter % args.sample_detection:
       detection_bbs = detector.detect(gray_detect, ROI=detection_roi)
       new_detections = matcher.inter_match(detection_bbs, tracking_bbs)
       trackers = tracker.deployTrackers(frame, new_detections, trackers)
+    
     '''
     if counter == 10:
       detection_bbs = detector.detect(gray_detect, ROI=detection_roi)
       new_detections = matcher.inter_match(detection_bbs, tracking_bbs)
       trackers = tracker.deployTrackers(frame, [new_detections[0], new_detections[1]], trackers)
+    '''
 
     # Update the trackers
     tracker.updateTrackers(frame, trackers, ROI=detection_roi)
     tracking_bbs = tracker.retrieveBBs(trackers)
 
-    if len(trackers) > 0:
+    if len(trackers) > 5:
+      plt.figure(1)
+      plt.clf()
+      plt.figure(2)
       plt.clf()
       print("dx:", round(trackers[0].velocity.speed[0].speed, 2), \
         "dy:", round(trackers[0].velocity.speed[1].speed, 2), \
           "angle:", round(trackers[0].velocity.direction * 180 / 3.1416, 2))
       trackers[0].colour = (255,0,0)
       
-      for i in range(1):
+      plt.figure(1)
+      for i in range(5):
+        plt.title("Hog features")
         if not trackers[i].hog.hog is None:
-          plt.plot(trackers[i].hog.hog, '*')
+          plt.plot(trackers[i].hog.hog, '-.')
+      plt.figure(2)
+      for i in range(5):
+        plt.title("Histogram features")
+        if not trackers[i].histogram.histogram is None:
+          plt.plot(trackers[i].histogram.histogram, '.')
       plt.draw()
       
     # Draw on demand

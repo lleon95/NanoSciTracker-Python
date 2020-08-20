@@ -28,6 +28,7 @@ import cv2 as cv
 from drawutils import crop_roi
 from features.mosse import MosseFilter
 from features.hog import Hog
+from features.histogram import Histogram
 
 def computeTrackerRoi(roi):
     x1 = roi[0][0]
@@ -48,9 +49,6 @@ def computeCenterRoi(roi):
 
 def computeDirection(dx, dy):
     return np.arctan2(dy, dx)
-
-def compute_histogram(cropped):
-    return cv.calcHist([cropped],[0],None,[96],[64,256])
 
 class SpeedFeature():
     def __init__(self, mmp):
@@ -90,7 +88,7 @@ class Tracker:
         self.speed = (SpeedFeature(self.speed_bins), \
             SpeedFeature(self.speed_bins)) # (x,y)
         self.direction = 0
-        self.histogram = None
+        self.histogram = Histogram()
         self.hog = Hog()
         self.position = None
         self.mosse = MosseFilter()
@@ -106,7 +104,7 @@ class Tracker:
         # Initialise some features
         cropped = crop_roi(frame, roi)
         gray = cv.cvtColor(cropped, cv.COLOR_BGR2GRAY)
-        self.histogram = compute_histogram(gray)
+        self.histogram.initialise(gray)
         self.hog.initialise(gray, roi)
         self.mosse_valid = self.mosse.initialise(gray, roi)
         
@@ -126,9 +124,7 @@ class Tracker:
             self.direction = computeDirection(dx_v, dy_v)
 
     def _update_histogram(self, gray_roi):
-        hist1 = compute_histogram(gray_roi)
-        self.histogram = self.histogram * (1 - self.histo_lr) + \
-            self.histo_lr * hist1
+        self.histogram.update(gray_roi)
 
     def _update_hog(self, gray_roi):
         self.hog.update(gray_roi, self.roi)

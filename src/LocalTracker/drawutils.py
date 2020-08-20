@@ -59,3 +59,13 @@ def crop_roi(frame, roi):
     x2 = roi[1][0]
     y2 = roi[1][1]
     return frame[y1:y2, x1:x2]
+
+def computeCenterRoi(roi):
+    x1 = roi[0][0]
+    y1 = roi[0][1]
+    x2 = roi[1][0]
+    y2 = roi[1][1]
+    # Compute center
+    xc = (x2 + x1)/2.
+    yc = (y2 + y1)/2.
+    return (xc, yc)

@@ -26,9 +26,11 @@ import copy
 import cv2 as cv
 
 from drawutils import crop_roi
+from drawutils import computeCenterRoi
 from features.mosse import MosseFilter
 from features.hog import Hog
 from features.histogram import Histogram
+from features.velocity import Velocity
 
 def computeTrackerRoi(roi):
     x1 = roi[0][0]
@@ -36,41 +38,6 @@ def computeTrackerRoi(roi):
     x2 = roi[1][0]
     y2 = roi[1][1]
     return (x1, y1, x2 - x1, y2 - y1)
-
-def computeCenterRoi(roi):
-    x1 = roi[0][0]
-    y1 = roi[0][1]
-    x2 = roi[1][0]
-    y2 = roi[1][1]
-    # Compute center
-    xc = (x2 + x1)/2.
-    yc = (y2 + y1)/2.
-    return (xc, yc)
-
-def computeDirection(dx, dy):
-    return np.arctan2(dy, dx)
-
-class SpeedFeature():
-    def __init__(self, mmp):
-        # Feature - speed
-        self.speed = -1
-        self.speed_vector = list([])
-        self.speed_counter = 0
-        self.mobile_mean_param = mmp
-
-    def _compute(self):
-        if self.speed_counter < self.mobile_mean_param:
-            return -1
-        
-        self.speed = np.mean(np.gradient(np.array(self.speed_vector), 1))
-        return self.speed
-
-    def add_sample(self, position):
-        self.speed_counter += 1
-        if len(self.speed_vector) > self.mobile_mean_param:
-            self.speed_vector.pop(0)
-        self.speed_vector.append(position)
-        return self._compute()
 
 class Tracker:
     def __init__(self, colour, timeout=5):
@@ -85,15 +52,14 @@ class Tracker:
         self.histo_lr = 0.1
 
         # Features
-        self.speed = (SpeedFeature(self.speed_bins), \
-            SpeedFeature(self.speed_bins)) # (x,y)
-        self.direction = 0
+        self.velocity = Velocity()
         self.histogram = Histogram()
         self.hog = Hog()
         self.position = None
         self.mosse = MosseFilter()
-        self.mosse_valid = False
+
         # State
+        self.mosse_valid = False
         self.stable = True
         
     def init(self, frame, roi, stable=True):
@@ -106,6 +72,7 @@ class Tracker:
         gray = cv.cvtColor(cropped, cv.COLOR_BGR2GRAY)
         self.histogram.initialise(gray)
         self.hog.initialise(gray, roi)
+        self.velocity.initialise(roi)
         self.mosse_valid = self.mosse.initialise(gray, roi)
         
         # Set the flag
@@ -116,12 +83,7 @@ class Tracker:
     
     def _update_speed(self):
         self.position = computeCenterRoi(self.roi)
-        xc, yc = self.position
-        dx, dy = self.speed
-        dx_v = dx.add_sample(xc)
-        dy_v = dy.add_sample(yc)
-        if dx_v != 0.:
-            self.direction = computeDirection(dx_v, dy_v)
+        return self.velocity.update(self.roi)
 
     def _update_histogram(self, gray_roi):
         self.histogram.update(gray_roi)

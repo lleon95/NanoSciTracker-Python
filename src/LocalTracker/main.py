@@ -79,9 +79,9 @@ def main(args):
 
     if len(trackers) > 0:
       plt.clf()
-      print("dx:", round(trackers[0].speed[0].speed, 2), \
-        "dy:", round(trackers[0].speed[1].speed, 2), \
-          "angle:", round(trackers[0].direction * 180 / 3.1416, 2))
+      print("dx:", round(trackers[0].velocity.speed[0].speed, 2), \
+        "dy:", round(trackers[0].velocity.speed[1].speed, 2), \
+          "angle:", round(trackers[0].velocity.direction * 180 / 3.1416, 2))
       trackers[0].colour = (255,0,0)
       
       for i in range(1):

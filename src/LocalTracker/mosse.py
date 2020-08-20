@@ -66,7 +66,7 @@ def preprocess(win, hanWin):
     return win * hanWin
 
 class MosseFilter(Feature):
-    def __init__(self):
+    def __init__(self, lr=0.2, th=5.7):
         super().__init__()
 
         # Filter details
@@ -79,8 +79,8 @@ class MosseFilter(Feature):
         self.f = None
 
         # Hyper-parameters
-        self.lr = 0.2
-        self.th = 5.7
+        self.lr = lr
+        self.th = th
 
     def extractBoundingBox(self, bounding_box):
         p1, p2 = bounding_box

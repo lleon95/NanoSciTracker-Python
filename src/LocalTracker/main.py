@@ -28,6 +28,7 @@ import copy
 import cv2 as cv
 import time
 import matplotlib.pyplot as plt
+import numpy as np
 
 import detector
 import tracker
@@ -42,7 +43,7 @@ def main(args):
   
   plt.ion()
 
-  detection_roi = (40, 40, 600, 440)
+  detection_roi = (10, 10, 630, 470)
   
   while(cap.isOpened()):
     # Grab the frame
@@ -61,22 +62,29 @@ def main(args):
     gray_detect3 = copy.deepcopy(gray_detect)
     
     # Detection - Refresh tracking
+    '''
     if counter % args.sample_detection:
       detection_bbs = detector.detect(gray_detect, ROI=detection_roi)
       new_detections = matcher.inter_match(detection_bbs, tracking_bbs)
       trackers = tracker.deployTrackers(frame, new_detections, trackers)
-      
+    '''
+    if counter == 10:
+      detection_bbs = detector.detect(gray_detect, ROI=detection_roi)
+      new_detections = matcher.inter_match(detection_bbs, tracking_bbs)
+      trackers = tracker.deployTrackers(frame, [new_detections[0], new_detections[1]], trackers)
+
     # Update the trackers
     tracker.updateTrackers(frame, trackers, ROI=detection_roi)
     tracking_bbs = tracker.retrieveBBs(trackers)
 
-    if len(trackers) > 5:
+    if len(trackers) > 0:
       plt.clf()
       print("dx:", round(trackers[0].speed[0].speed, 2), \
         "dy:", round(trackers[0].speed[1].speed, 2), \
           "angle:", round(trackers[0].direction * 180 / 3.1416, 2))
-      trackers[3].colour = (255,0,0)
-      for i in range(3):
+      trackers[0].colour = (255,0,0)
+      
+      for i in range(1):
         if not trackers[i].hog is None:
           plt.plot(trackers[i].hog, '*')
       plt.draw()

@@ -76,6 +76,7 @@ class MosseFilter(Feature):
         self.G = None
         self.hanWin = None
         self.size = None
+        self.f = None
 
         # Hyper-parameters
         self.lr = 0.2
@@ -138,8 +139,11 @@ class MosseFilter(Feature):
             B_i = F * np.conjugate(F)
             self.A += A_i
             self.B += B_i
-        self.H = self.A / self.B
+
+        if np.isin(0 + 0j, self.B).any():
+            return False
         
+        self.H = self.A / self.B
         return True
 
     def predict(self, gray_image, bounding_box):
@@ -155,7 +159,7 @@ class MosseFilter(Feature):
         '''
         # Verify initialisation
         if self.H is None:
-            return False
+            return (False, bounding_box)
 
         # Extract the window
         p1, w, h = self.extractBoundingBox(bounding_box)
@@ -174,11 +178,13 @@ class MosseFilter(Feature):
         # Get window
         window = cv.getRectSubPix(gray_image, self.size, center)
         f = preprocess(window, self.hanWin)
+        
 
         # Apply correlation
         F = np.fft.fft2(f)
         F_r = F * self.H
         f_r = np.real(np.fft.ifft2(F_r))
+        self.f = f_r
 
         # Find the PSR
         minVal, maxVal, minLoc, maxLoc = cv.minMaxLoc(f_r)
@@ -187,10 +193,11 @@ class MosseFilter(Feature):
         mean = np.mean(f_r)
         std = np.std(f_r)
         PSR = (maxVal-mean) / (std + 0.00001)
+        print(PSR)
 
         # Threshold PSR
         if PSR < self.th:
-            return False
+            return (False, bounding_box)
 
         x0 = p[0] + delta_x
         y0 = p[1] + delta_y

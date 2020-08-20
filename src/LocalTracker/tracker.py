@@ -27,6 +27,7 @@ import cv2 as cv
 from skimage.feature import hog
 
 from drawutils import crop_roi
+from mosse import MosseFilter
 
 def computeTrackerRoi(roi):
     x1 = roi[0][0]
@@ -90,7 +91,7 @@ class SpeedFeature():
 
 class Tracker:
     def __init__(self, colour, timeout=5):
-        self.tracker = cv.TrackerKCF_create()
+        self.tracker = cv.TrackerMOSSE_create()
         self.colour = colour
         self.roi = None
         self.orig_roi  = None
@@ -110,13 +111,14 @@ class Tracker:
         self.histogram = None
         self.hog = None
         self.position = None
-
+        self.mosse = MosseFilter()
+        self.mosse_valid = False
         # State
         self.stable = True
         
     def init(self, frame, roi, stable=True):
         self.roi = roi
-        self.orig_roi = roi
+        self.orig_roi = computeTrackerRoi(roi)
         tracker_roi = computeTrackerRoi(roi)
 
         # Initialise some features
@@ -124,7 +126,8 @@ class Tracker:
         gray = cv.cvtColor(cropped, cv.COLOR_BGR2GRAY)
         self.histogram = compute_histogram(gray)
         self.hog = compute_hog(gray, self)
-
+        self.mosse_valid = self.mosse.initialise(gray, roi)
+        
         # Set the flag
         self.stable = stable
 
@@ -153,6 +156,23 @@ class Tracker:
             else:
                 self.hog = self.hog * (1 - self.hog_lr) + \
                     self.hog_lr * hog1
+
+    def _update_mosse(self, gray):
+        cx, cy = computeCenterRoi(self.roi)
+        w2 = self.orig_roi[2]/2
+        h2 = self.orig_roi[3]/2
+
+        p1 = (int(cx - w2), int(cy - h2))
+        p2 = (int(cx + w2), int(cy + h2))
+
+        centred_roi = (p1, p2)
+
+        cropped = crop_roi(gray, centred_roi)
+
+        if self.mosse_valid:
+            self.mosse.update(cropped, centred_roi)
+        else:
+            self.mosse_valid = self.mosse.initialise(cropped, centred_roi)
          
     def update(self, frame, ROI=None):
         ok, bbox = self.tracker.update(frame)
@@ -163,20 +183,22 @@ class Tracker:
             self.roi = (p1, p2)
 
         # Crop and grayscale
-        cropped = crop_roi(frame, self.roi)
-        gray = cv.cvtColor(cropped, cv.COLOR_BGR2GRAY)
+        gray_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        gray = crop_roi(gray_frame, self.roi)
 
         # Update features
         self._update_speed()
-        xc, yc = self.position
 
         if not ROI is None:
-            if xc >= ROI[0] and xc <= ROI[2] and yc >= ROI[1] and yc <= ROI[3]:
+            if self.roi[0][0] >= ROI[0] and self.roi[1][0] <= ROI[2] and \
+            self.roi[0][1] >= ROI[1] and self.roi[1][1] <= ROI[3]:
                 self._update_histogram(gray)
                 self._update_hog(gray)
+                self._update_mosse(gray_frame)
         else:
             self._update_histogram(gray)
             self._update_hog(gray)
+            self._update_mosse(gray_frame)
 
         if self.timeout == 0:
             return False

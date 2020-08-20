@@ -25,7 +25,7 @@ import numpy as np
 import copy
 import cv2 as cv
 
-from feature import Feature
+from features.feature import Feature
 
 def randWarp(win):
     '''

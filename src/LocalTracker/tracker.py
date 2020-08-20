@@ -26,8 +26,8 @@ import copy
 import cv2 as cv
 
 from drawutils import crop_roi
-from mosse import MosseFilter
-from hog import Hog
+from features.mosse import MosseFilter
+from features.hog import Hog
 
 def computeTrackerRoi(roi):
     x1 = roi[0][0]

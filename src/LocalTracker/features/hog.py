@@ -23,7 +23,7 @@
 
 from skimage.feature import hog
 
-from feature import Feature
+from features.feature import Feature
 
 class Hog(Feature):
     def __init__(self, padding=(64, 64), area=(640,480), lr=0.1):

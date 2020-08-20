@@ -85,8 +85,8 @@ def main(args):
       trackers[0].colour = (255,0,0)
       
       for i in range(1):
-        if not trackers[i].hog is None:
-          plt.plot(trackers[i].hog, '*')
+        if not trackers[i].hog.hog is None:
+          plt.plot(trackers[i].hog.hog, '*')
       plt.draw()
       
     # Draw on demand

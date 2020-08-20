@@ -24,10 +24,10 @@
 import numpy as np
 import copy
 import cv2 as cv
-from skimage.feature import hog
 
 from drawutils import crop_roi
 from mosse import MosseFilter
+from hog import Hog
 
 def computeTrackerRoi(roi):
     x1 = roi[0][0]
@@ -51,21 +51,6 @@ def computeDirection(dx, dy):
 
 def compute_histogram(cropped):
     return cv.calcHist([cropped],[0],None,[96],[64,256])
-
-def compute_hog(gray, tracker):
-    x1 = tracker.roi[0][0]
-    y1 = tracker.roi[0][1]
-    x2 = tracker.roi[1][0]
-    y2 = tracker.roi[1][1]
-    padding = tracker.hog_padding
-    area = tracker.hog_area
-    
-    hog_ = hog(gray, orientations=17, pixels_per_cell=(y2-y1, x2-x1),
-        cells_per_block=(1, 1), feature_vector=True)
-
-    if len(hog_) == 0:
-        hog_ = None
-    return hog_
 
 class SpeedFeature():
     def __init__(self, mmp):
@@ -100,16 +85,13 @@ class Tracker:
         # Hyperparams
         self.speed_bins = 30
         self.histo_lr = 0.1
-        self.hog_lr = 0.1
-        self.hog_padding = (64, 64)
-        self.hog_area = (640,480)
 
         # Features
         self.speed = (SpeedFeature(self.speed_bins), \
             SpeedFeature(self.speed_bins)) # (x,y)
         self.direction = 0
         self.histogram = None
-        self.hog = None
+        self.hog = Hog()
         self.position = None
         self.mosse = MosseFilter()
         self.mosse_valid = False
@@ -125,7 +107,7 @@ class Tracker:
         cropped = crop_roi(frame, roi)
         gray = cv.cvtColor(cropped, cv.COLOR_BGR2GRAY)
         self.histogram = compute_histogram(gray)
-        self.hog = compute_hog(gray, self)
+        self.hog.initialise(gray, roi)
         self.mosse_valid = self.mosse.initialise(gray, roi)
         
         # Set the flag
@@ -149,13 +131,7 @@ class Tracker:
             self.histo_lr * hist1
 
     def _update_hog(self, gray_roi):
-        hog1 = compute_hog(gray_roi, self)
-        if not hog1 is None:
-            if self.hog is None:
-                self.hog = hog1
-            else:
-                self.hog = self.hog * (1 - self.hog_lr) + \
-                    self.hog_lr * hog1
+        self.hog.update(gray_roi, self.roi)
 
     def _update_mosse(self, gray):
         cx, cy = computeCenterRoi(self.roi)

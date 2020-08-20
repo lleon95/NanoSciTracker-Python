@@ -193,7 +193,6 @@ class MosseFilter(Feature):
         mean = np.mean(f_r)
         std = np.std(f_r)
         PSR = (maxVal-mean) / (std + 0.00001)
-        print(PSR)
 
         # Threshold PSR
         if PSR < self.th:

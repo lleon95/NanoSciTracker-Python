@@ -147,32 +147,6 @@ def bounding_boxes(negative, size=None):
     bb_list = label_boxes(negative, size)
     return bb_list
 
-def detect(img, batches=2, size=None):
-    '''
-    Performs the detection by using binarisation and thresholding. It's
-    principle is based on Otsu's thresholding followed by local maxima
-    detection and thresholding again to make it binary.
-    
-    Parameters:
-    
-    img: grayscale image
-    
-    Return:
-    
-    bboxes
-    '''
-    # Binarise image with otsu with 4 windows (2^2)
-    otsu = binarise_otsu(img, batches)
-
-    if size is None:
-        size = np.shape(otsu)
-
-    # Locate the maxima
-    k = compute_k(np.shape(otsu))
-    maxima = locate_maxima(otsu, k)
-    # Get the bounding boxes
-    return bounding_boxes(maxima, size)
-
 def add_offset(roi, offset):
   '''
   Add the proper offset to the roi
@@ -186,7 +160,51 @@ def add_offset(roi, offset):
   '''
   p1 = (roi[0][0] + offset[0], roi[0][1] + offset[1])
   p2 = (roi[1][0] + offset[0], roi[1][1] + offset[1])
-  return (p1, p2)
+  return [p1, p2]
+
+def detect(img, batches=2, size=None, ROI=None):
+    '''
+    Performs the detection by using binarisation and thresholding. It's
+    principle is based on Otsu's thresholding followed by local maxima
+    detection and thresholding again to make it binary.
+    
+    Parameters:
+    
+    img: grayscale image
+    ROI: Detection zone
+    
+    Return:
+    
+    bboxes
+    '''
+    # Select per ROI detection
+    add_offset_sw = False
+    offset = None
+
+    if not ROI is None:
+        img_roi = img[ROI[1]:ROI[3],ROI[0]:ROI[2]]
+        offset = (ROI[0], ROI[1])
+        add_offset_sw = True
+    else:
+        img_roi = img
+
+    # Binarise image with otsu with 4 windows (2^2)
+    otsu = binarise_otsu(img_roi, batches)
+
+    if size is None:
+        size = np.shape(otsu)
+
+    # Locate the maxima
+    k = compute_k(np.shape(otsu))
+    maxima = locate_maxima(otsu, k)
+    # Get the bounding boxes
+    bbs = bounding_boxes(maxima, size)
+
+    # Add offset if needed
+    if add_offset_sw:
+        for i in range(len(bbs)):
+            bbs[i] = add_offset(bbs[i], offset)
+    return bbs
 
 def roi_chopper(gray, bbox):
   '''

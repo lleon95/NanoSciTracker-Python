@@ -21,51 +21,18 @@
 # This project was sponsored by CNR-IOM
 # Master in High-Performance Computing - SISSA
 
-import cv2 as cv
+class Feature:
+    '''
+    Skeleton for formating the feature and following a standard
+    '''
+    def __init__(self):
+        self.lr = 0.2
 
-'''
-Painting tools for tracking
-'''
-def draw_tracker(frame, tracker):
-    # Extract the roi
-    p1, p2 = tracker.roi
-    # Draw on the frame
-    frame = cv.rectangle(frame, p1, p2, tracker.colour, 3, 1)
-    return frame
-    
-def draw_trackers(frame, trackers):
-    for i in trackers:
-        frame = draw_tracker(frame, i)
-    return frame
+    def update(self, **kwargs):
+        return True
 
-'''
-Painting tools for detection
-'''
-def draw_detections(frame, bbs, colour=(255,0,0)):
-    for i in bbs:
-        cv.rectangle(frame, i[0], i[1], colour, 3)
-    return frame
+    def initialise(self, **kwargs):
+        return True
 
-'''
-Cropping tools
-'''
-def crop_roi(frame, roi):
-    x1 = roi[0][0]
-    y1 = roi[0][1]
-    if x1 < 0:
-        x1 = 0
-    if y1 < 0:
-        y1 = 0
-    x2 = roi[1][0]
-    y2 = roi[1][1]
-    return frame[y1:y2, x1:x2]
-
-def computeCenterRoi(roi):
-    x1 = roi[0][0]
-    y1 = roi[0][1]
-    x2 = roi[1][0]
-    y2 = roi[1][1]
-    # Compute center
-    xc = (x2 + x1)/2.
-    yc = (y2 + y1)/2.
-    return (xc, yc)
+    def predict(self, **kwargs):
+        return True

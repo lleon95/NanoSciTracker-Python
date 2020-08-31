@@ -23,49 +23,30 @@
 
 import cv2 as cv
 
-'''
-Painting tools for tracking
-'''
-def draw_tracker(frame, tracker):
-    # Extract the roi
-    p1, p2 = tracker.roi
-    # Draw on the frame
-    frame = cv.rectangle(frame, p1, p2, tracker.colour, 3, 1)
-    return frame
-    
-def draw_trackers(frame, trackers):
-    for i in trackers:
-        frame = draw_tracker(frame, i)
-    return frame
+from features.feature import Feature
 
-'''
-Painting tools for detection
-'''
-def draw_detections(frame, bbs, colour=(255,0,0)):
-    for i in bbs:
-        cv.rectangle(frame, i[0], i[1], colour, 3)
-    return frame
+class Histogram(Feature):
+    def __init__(self, range=[64,256], bins=[96], lr=0.1):
+        super().__init__()
+        self.histogram = None
 
-'''
-Cropping tools
-'''
-def crop_roi(frame, roi):
-    x1 = roi[0][0]
-    y1 = roi[0][1]
-    if x1 < 0:
-        x1 = 0
-    if y1 < 0:
-        y1 = 0
-    x2 = roi[1][0]
-    y2 = roi[1][1]
-    return frame[y1:y2, x1:x2]
+        # Hyper-parameters
+        self.range = range
+        self.bins = bins
+        self.lr = lr
 
-def computeCenterRoi(roi):
-    x1 = roi[0][0]
-    y1 = roi[0][1]
-    x2 = roi[1][0]
-    y2 = roi[1][1]
-    # Compute center
-    xc = (x2 + x1)/2.
-    yc = (y2 + y1)/2.
-    return (xc, yc)
+    def _compute_histogram(self, cropped):
+        return cv.calcHist([cropped], [0], None, self.bins, self.range)
+
+    def update(self, gray_roi):
+        hist1 = self._compute_histogram(gray_roi)
+        self.histogram = self.histogram * (1 - self.lr) + \
+            self.lr * hist1
+        return True
+
+    def initialise(self, cropped):
+        self.histogram = self._compute_histogram(cropped)
+        return True
+
+    def predict(self):
+        return True

@@ -27,6 +27,8 @@ import argparse
 import copy
 import cv2 as cv
 import time
+import matplotlib.pyplot as plt
+import numpy as np
 
 import detector
 import tracker
@@ -39,6 +41,9 @@ def main(args):
   counter = 0
   trackers = []
   
+  plt.ion()
+
+  detection_roi = (10, 10, 630, 470)
   
   while(cap.isOpened()):
     # Grab the frame
@@ -58,24 +63,57 @@ def main(args):
     
     # Detection - Refresh tracking
     if counter % args.sample_detection:
-      detection_bbs = detector.detect(gray_detect)
+      detection_bbs = detector.detect(gray_detect, ROI=detection_roi)
       new_detections = matcher.inter_match(detection_bbs, tracking_bbs)
       trackers = tracker.deployTrackers(frame, new_detections, trackers)
-      
+    
+    '''
+    if counter == 10:
+      detection_bbs = detector.detect(gray_detect, ROI=detection_roi)
+      new_detections = matcher.inter_match(detection_bbs, tracking_bbs)
+      trackers = tracker.deployTrackers(frame, [new_detections[0], new_detections[1]], trackers)
+    '''
+
     # Update the trackers
-    tracker.updateTrackers(frame, trackers)
+    tracker.updateTrackers(frame, trackers, ROI=detection_roi)
     tracking_bbs = tracker.retrieveBBs(trackers)
 
+    if len(trackers) > 5:
+      plt.figure(1)
+      plt.clf()
+      plt.figure(2)
+      plt.clf()
+      print("dx:", round(trackers[0].velocity.speed[0].speed, 2), \
+        "dy:", round(trackers[0].velocity.speed[1].speed, 2), \
+          "angle:", round(trackers[0].velocity.direction * 180 / 3.1416, 2))
+      trackers[0].colour = (255,0,0)
+      
+      plt.figure(1)
+      for i in range(5):
+        plt.title("Hog features")
+        if not trackers[i].hog.hog is None:
+          plt.plot(trackers[i].hog.hog, '-.')
+      plt.figure(2)
+      for i in range(5):
+        plt.title("Histogram features")
+        if not trackers[i].histogram.histogram is None:
+          plt.plot(trackers[i].histogram.histogram, '.')
+      plt.draw()
+      
     # Draw on demand
     if args.draw_detection:
-      detection_bbs = detector.detect(gray_detect)
+      detection_bbs = detector.detect(gray_detect, ROI=detection_roi)
       detections_frame = copy.deepcopy(frame)
-      detections_frame = drawutils.draw_detections(detections_frame, detection_bbs)   
+      detections_frame = drawutils.draw_detections(detections_frame, detection_bbs)
+      cv.rectangle(detections_frame, (detection_roi[0], detection_roi[1], \
+        detection_roi[2] - detection_roi[0], detection_roi[3] - detection_roi[1]), (255,0,0), 2)
       cv.imshow("Detection", detections_frame)
       
     if args.draw_tracking:
       tracking_frame = copy.deepcopy(frame)
       tracking_frame = drawutils.draw_trackers(tracking_frame, trackers)
+      cv.rectangle(tracking_frame, (detection_roi[0], detection_roi[1], \
+        detection_roi[2] - detection_roi[0], detection_roi[3] - detection_roi[1]), (255,0,0), 2)
       tracking_frame = drawutils.draw_detections(tracking_frame, new_detections, (0,0,255))
       cv.imshow("Tracking", tracking_frame)
       

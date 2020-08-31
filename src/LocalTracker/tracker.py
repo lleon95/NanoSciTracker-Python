@@ -40,12 +40,13 @@ def computeTrackerRoi(roi):
     return (x1, y1, x2 - x1, y2 - y1)
 
 class Tracker:
-    def __init__(self, colour, timeout=5):
+    def __init__(self, colour, grayscale=True, timeout=5):
         self.tracker = cv.TrackerKCF_create()
         self.colour = colour
         self.roi = None
         self.orig_roi  = None
         self.timeout = timeout
+        self.grayscale = grayscale
 
         # Hyperparams
         self.speed_bins = 30
@@ -53,7 +54,7 @@ class Tracker:
 
         # Features
         self.velocity = Velocity()
-        self.histogram = Histogram()
+        self.histogram = Histogram(grayscale)
         self.hog = Hog()
         self.position = None
         self.mosse = MosseFilter()
@@ -70,7 +71,7 @@ class Tracker:
         # Initialise some features
         cropped = crop_roi(frame, roi)
         gray = cv.cvtColor(cropped, cv.COLOR_BGR2GRAY)
-        self.histogram.initialise(gray)
+        self.histogram.initialise(cropped)
         self.hog.initialise(gray, roi)
         self.velocity.initialise(roi)
         self.mosse_valid = self.mosse.initialise(gray, roi)
@@ -85,8 +86,12 @@ class Tracker:
         self.position = computeCenterRoi(self.roi)
         return self.velocity.update(self.roi)
 
-    def _update_histogram(self, gray_roi):
-        self.histogram.update(gray_roi)
+    def _update_histogram(self, cropped):
+        if self.grayscale:
+            gray = cv.cvtColor(cropped, cv.COLOR_BGR2GRAY)
+            self.histogram.update(gray)
+        else:
+            self.histogram.update(cropped)
 
     def _update_hog(self, gray_roi):
         self.hog.update(gray_roi, self.roi)
@@ -119,6 +124,7 @@ class Tracker:
         # Crop and grayscale
         gray_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         gray = crop_roi(gray_frame, self.roi)
+        cropped = crop_roi(frame, self.roi)
 
         # Update features
         self._update_speed()
@@ -126,11 +132,11 @@ class Tracker:
         if not ROI is None:
             if self.roi[0][0] >= ROI[0] and self.roi[1][0] <= ROI[2] and \
             self.roi[0][1] >= ROI[1] and self.roi[1][1] <= ROI[3]:
-                self._update_histogram(gray)
+                self._update_histogram(cropped)
                 self._update_hog(gray)
                 self._update_mosse(gray_frame)
         else:
-            self._update_histogram(gray)
+            self._update_histogram(cropped)
             self._update_hog(gray)
             self._update_mosse(gray_frame)
 

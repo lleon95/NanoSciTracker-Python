@@ -138,7 +138,8 @@ def label_boxes(markers, size=None):
         size = np.shape(heat)
 
     padding = compute_padding(size)
-    bb_list = get_bbs(labels, padding, padding)
+    # FIXME: Pay attention on the max size
+    bb_list = get_bbs(labels, padding, padding, padding * 4)
     
     return bb_list
 

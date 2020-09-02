@@ -186,7 +186,7 @@ class World:
                 bbs.append(((x1,y1),(x2,y2)))
         return bbs
         
-    def draw(self):
+    def draw(self, draw_bbs=False):
         '''
         Draws all the instances on the canvas (or redraw if invoked several 
         times)
@@ -199,8 +199,9 @@ class World:
                 self.canvas = cv.circle(self.canvas, (int(i.x), int(i.y)), \
                   int(i.size), i.colour, int(-1))
                 roi = self.getROI(i)
-                self.canvas = cv.rectangle(self.canvas, roi[0], roi[1], \
-                  i.colour, 1) 
+                if draw_bbs:
+                    self.canvas = cv.rectangle(self.canvas, roi[0], roi[1], \
+                      i.colour, 1) 
         return self.canvas
     
     def update(self):

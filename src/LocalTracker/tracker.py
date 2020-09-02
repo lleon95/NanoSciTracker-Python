@@ -62,9 +62,24 @@ class Tracker:
         # State
         self.mosse_valid = False
         self.stable = True
+        self.out_roi = False
+
+    def _validate_roi(self, ROI):
+        if not ROI is None:
+            if self.roi[0][0] >= ROI[0] and self.roi[1][0] <= ROI[2] and \
+            self.roi[0][1] >= ROI[1] and self.roi[1][1] <= ROI[3]:
+                return True
+            else:
+                return False
+        return True
         
-    def init(self, frame, roi, stable=True):
+    def init(self, frame, roi, stable=True, scene_roi=None):
         self.roi = roi
+
+        # Valid zone
+        if not self._validate_roi(scene_roi):
+            return False
+
         self.orig_roi = computeTrackerRoi(roi)
         tracker_roi = computeTrackerRoi(roi)
 
@@ -129,16 +144,12 @@ class Tracker:
         # Update features
         self._update_speed()
 
-        if not ROI is None:
-            if self.roi[0][0] >= ROI[0] and self.roi[1][0] <= ROI[2] and \
-            self.roi[0][1] >= ROI[1] and self.roi[1][1] <= ROI[3]:
-                self._update_histogram(cropped)
-                self._update_hog(gray)
-                self._update_mosse(gray_frame)
-        else:
+        self.out_roi = True
+        if self._validate_roi(ROI):
             self._update_histogram(cropped)
             self._update_hog(gray)
             self._update_mosse(gray_frame)
+            self.out_roi = False
 
         if self.timeout == 0:
             return False
@@ -159,11 +170,12 @@ def updateTrackers(frame, trackers, ROI=None):
             i += 1
     return trackers
 
-def deployTrackers(colour, bb_list, trackers):
+def deployTrackers(colour, bb_list, trackers, ROI=None):
     for i in bb_list:
         tracker = Tracker((0,255,0))
-        tracker.init(colour, i)
-        trackers.append(tracker)
+        do_add = tracker.init(colour, i, scene_roi=ROI)
+        if do_add:
+            trackers.append(tracker)
     return trackers
 
 def retrieveBBs(trackers):
@@ -171,4 +183,11 @@ def retrieveBBs(trackers):
     for tracker in trackers:
         bounding_boxes.append(tracker.roi)
     return bounding_boxes
+
+def retrieveOutScene(trackers):
+    trackers_ = []
+    for tracker in trackers:
+        if tracker.out_roi:
+            trackers_.append(tracker)
+    return trackers_
     

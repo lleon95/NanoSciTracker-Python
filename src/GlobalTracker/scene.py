@@ -33,8 +33,10 @@ class Scene:
         # Get coordinates
         self.roi = ROI
         x, y = self.roi
-        self.x, self.w = x
-        self.y, self.h = y
+        self.x0, self.x1 = x
+        self.y0, self.y1 = y
+        self.w = self.x1 - self.x0
+        self.h = self.y1 - self.y0
         self.overlap = overlap
 
         # ROIs
@@ -42,6 +44,8 @@ class Scene:
             self.detection_roi = (self.overlap, self.overlap, \
                 self.w - self.overlap, \
                 self.h - self.overlap)
+        else:
+            self.detection_roi = detection_roi
 
         # BBs
         self.trackers = []
@@ -55,7 +59,7 @@ class Scene:
         self.detection_sampling = detection_sampling
 
     def detect(self, gray_frame):
-        return Detector.detect(gray_frame, ROI=self.detection_roi)
+        return Detector.detect(gray_frame)
 
     def track(self, colour_frame):
         Tracker.updateTrackers(colour_frame, self.trackers, \
@@ -71,7 +75,7 @@ class Scene:
                 self.trackings)
             # Deploy new trackers accordingly
             self.trackers = Tracker.deployTrackers(colour_frame, \
-                self.new_detections, self.trackers)
+                self.new_detections, self.trackers, ROI=self.detection_roi)
         # Perform tracking update
         self.trackings = self.track(colour_frame)
         # Catch trackers which went out of scene

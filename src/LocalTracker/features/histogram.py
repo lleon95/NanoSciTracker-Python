@@ -22,13 +22,15 @@
 # Master in High-Performance Computing - SISSA
 
 import cv2 as cv
+import numpy as np
 
 from features.feature import Feature
 
 class Histogram(Feature):
-    def __init__(self, range=[64,256], bins=[96], lr=0.1):
+    def __init__(self, grayscale=False, range=[64,256], bins=[96], lr=0.1):
         super().__init__()
         self.histogram = None
+        self.grayscale = grayscale
 
         # Hyper-parameters
         self.range = range
@@ -36,7 +38,14 @@ class Histogram(Feature):
         self.lr = lr
 
     def _compute_histogram(self, cropped):
-        return cv.calcHist([cropped], [0], None, self.bins, self.range)
+        if self.grayscale:
+            return cv.calcHist([cropped], [0], None, self.bins, self.range)
+        else:
+            arr = list([])
+            arr.append(cv.calcHist([cropped], [0], None, self.bins, self.range))
+            arr.append(cv.calcHist([cropped], [1], None, self.bins, self.range))
+            arr.append(cv.calcHist([cropped], [2], None, self.bins, self.range))
+            return np.array(arr) 
 
     def update(self, gray_roi):
         hist1 = self._compute_histogram(gray_roi)

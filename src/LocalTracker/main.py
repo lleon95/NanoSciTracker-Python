@@ -97,7 +97,7 @@ def main(args):
       for i in range(5):
         plt.title("Histogram features")
         if not trackers[i].histogram.histogram is None:
-          plt.plot(trackers[i].histogram.histogram, '.')
+          plt.plot(trackers[i].histogram.histogram)
       plt.draw()
       
     # Draw on demand

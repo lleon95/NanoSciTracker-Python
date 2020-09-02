@@ -62,6 +62,7 @@ class Tracker:
         # State
         self.mosse_valid = False
         self.stable = True
+        self.out_roi = False
         
     def init(self, frame, roi, stable=True):
         self.roi = roi
@@ -135,10 +136,14 @@ class Tracker:
                 self._update_histogram(cropped)
                 self._update_hog(gray)
                 self._update_mosse(gray_frame)
+                self.out_roi = False
+            else:
+                self.out_roi = True
         else:
             self._update_histogram(cropped)
             self._update_hog(gray)
             self._update_mosse(gray_frame)
+            self.out_roi = False
 
         if self.timeout == 0:
             return False
@@ -171,4 +176,11 @@ def retrieveBBs(trackers):
     for tracker in trackers:
         bounding_boxes.append(tracker.roi)
     return bounding_boxes
+
+def retrieveOutScene(trackers):
+    trackers_ = []
+    for tracker in trackers:
+        if tracker.out_roi:
+            trackers_.append(tracker)
+    return trackers_
     

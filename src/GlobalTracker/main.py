@@ -70,12 +70,17 @@ def main(args):
 
     # Update scenes
     tracking_world.update_trackers(frames)
+    '''
     labeled_frames = tracking_world.label_scenes()
-
     for i in range(len(labeled_frames)):
       # Display
       cv.imshow("Scene " + str(i+1), labeled_frames[i])
       cv.waitKey(1)
+    '''
+    world_labeled = tracking_world.draw_trackers(drawing)
+    cv.imshow("World", world_labeled)
+    cv.waitKey(1)
+
     time.sleep(args.delay_player)
 
 if __name__ == "__main__":

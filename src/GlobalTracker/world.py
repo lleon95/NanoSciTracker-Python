@@ -23,10 +23,14 @@
 import copy
 
 import scene as Scene
+import LocalTracker.drawutils as DrawUtils
 
 class World:
     def __init__(self):
         self._scenes = []
+        self._new_trackers = []
+        self._current_trackers = []
+        self._out_trackers = []
 
     def spawn_scenes(self, rois, overlapping=0, sampling_rate=3):
         '''
@@ -68,7 +72,11 @@ class World:
             self.load_frames(frames)
 
         for scene in self._scenes:
-            scene.update()
+            cur, out, new = scene.update()
+            self._new_trackers += new 
+            self._out_trackers += out
+
+        self._current_trackers += self._new_trackers
 
     def label_scenes(self):
         """
@@ -88,3 +96,8 @@ class World:
             frames.append(scene.draw(frame))
 
         return frames
+
+    def draw_trackers(self, world):
+        frame = copy.deepcopy(world)
+        return DrawUtils.draw_trackers(frame, self._current_trackers, \
+            (255,255,255))

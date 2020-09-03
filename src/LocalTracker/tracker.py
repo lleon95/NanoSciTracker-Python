@@ -64,6 +64,7 @@ class Tracker:
         self.mosse = MosseFilter()
 
         # State
+        self.moved = False
         self.mosse_valid = False
         self.stable = True
         self.out_roi = False
@@ -157,8 +158,9 @@ class Tracker:
 
         if self.timeout == 0:
             return False
-        if not ok:
+        if not ok or self.out_roi:
             self.timeout -= 1
+
         return True
     
 def updateTrackers(frame, trackers, ROI=None):

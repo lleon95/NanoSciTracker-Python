@@ -29,9 +29,10 @@ import time
 
 sys.path.append("../")
 sys.path.append("../LocalTracker/")
+sys.path.append("../GlobalTracker/")
 
 import Playground.generator as Generator
-import GlobalTracker.scene as Scene
+import GlobalTracker.world as World
 
 def build_rois(roi_size, overlapping):
   h, w = roi_size
@@ -44,36 +45,42 @@ def build_rois(roi_size, overlapping):
        ((w_p,w_p+w),(0,h))]
   return ROIS
 
-def generate_scenes(rois, overlapping=0, sampling_rate=3):
-  scenes = []
-  for roi in rois:
-    scenes.append(Scene.Scene(ROI=roi, overlap=overlapping, \
-      detection_sampling=sampling_rate))
-  return scenes
-
 def main(args):
   # Generate the world
   my_world = Generator.World(playground_size=args.world_size,
                           mitosis=args.mitosis_rate,
                           instances=args.number_of_instances,
                           frames=args.frames)
+
+  # Attach world tracker
+  tracking_world = World.World()
   
   # Generate scenes
   rois = build_rois(args.scene_size, args.overlapping)
-  scenes = generate_scenes(rois, args.overlapping, \
+  tracking_world.spawn_scenes(rois, args.overlapping, \
     args.sampling_rate_detection)
 
   # Run the simulation
   while(my_world.update()):
     drawing = my_world.draw()
+    frames = []
     for i in range(len(rois)):
       # Refresh scene
-      scene_frame = Generator.getFrame(rois[i], drawing)
-      scenes[i].update(scene_frame)
-      drawing_scene = scenes[i].draw(scene_frame)
+      frames.append(Generator.getFrame(rois[i], drawing))
+
+    # Update scenes
+    tracking_world.update_trackers(frames)
+    '''
+    labeled_frames = tracking_world.label_scenes()
+    for i in range(len(labeled_frames)):
       # Display
-      cv.imshow("Scene " + str(i+1), drawing_scene)
+      cv.imshow("Scene " + str(i+1), labeled_frames[i])
       cv.waitKey(1)
+    '''
+    world_labeled = tracking_world.draw_trackers(drawing)
+    cv.imshow("World", world_labeled)
+    cv.waitKey(1)
+
     time.sleep(args.delay_player)
 
 if __name__ == "__main__":

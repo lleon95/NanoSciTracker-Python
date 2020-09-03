@@ -38,6 +38,7 @@ class Scene:
         self.w = self.x1 - self.x0
         self.h = self.y1 - self.y0
         self.overlap = overlap
+        self.frame = None
 
         # ROIs
         if detection_roi is None:
@@ -52,11 +53,15 @@ class Scene:
         self.detections = []
         self.trackings = []
         self.new_detections = []
+        self.trackers_new_detections = []
         self.trackers_out_scene = []
 
         # Settings
         self.counter = 0
         self.detection_sampling = detection_sampling
+
+    def load_frame(self, frame):
+        self.frame = frame
 
     def detect(self, gray_frame):
         return Detector.detect(gray_frame)
@@ -66,21 +71,28 @@ class Scene:
             ROI=self.detection_roi)
         return Tracker.retrieveBBs(self.trackers)
 
-    def update(self, colour_frame):
-        gray_detect = cv.cvtColor(colour_frame, cv.COLOR_BGR2GRAY)
+    def update(self, colour_frame=None):
+        if not colour_frame is None:
+            self.frame = colour_frame
+
+        gray_detect = cv.cvtColor(self.frame, cv.COLOR_BGR2GRAY)
         # Perform detections and filter the new ones
         if self.counter % self.detection_sampling == 0:
             self.detections = self.detect(gray_detect)
             self.new_detections = Matcher.inter_match(self.detections, \
                 self.trackings)
             # Deploy new trackers accordingly
-            self.trackers = Tracker.deployTrackers(colour_frame, \
-                self.new_detections, self.trackers, ROI=self.detection_roi)
+            self.trackers_new_detections = Tracker.deployTrackers(self.frame, \
+                self.new_detections, self.trackers, ROI=self.detection_roi,
+                offset=(self.x0, self.y0))
         # Perform tracking update
-        self.trackings = self.track(colour_frame)
+        self.trackings = self.track(self.frame)
         # Catch trackers which went out of scene
         self.trackers_out_scene = Tracker.retrieveOutScene(self.trackers)
         self.counter += 1
+
+        return (self.trackers, self.trackers_out_scene, \
+            self.trackers_new_detections)
     
     def draw(self, colour_frame):
         '''

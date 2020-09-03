@@ -26,20 +26,35 @@ import cv2 as cv
 '''
 Painting tools for tracking
 '''
-def draw_tracker(frame, tracker, colour=None):
+def place_id(tracker, frame, p2=None):
+    font = cv.FONT_HERSHEY_SIMPLEX
+    if p2 is None:
+        p1, p2 = tracker.roi
+    frame = cv.putText(frame, str(tracker.label['id']), p2, font, 1, \
+        (255,255,255), 2)
+    return frame
+
+def draw_tracker(frame, tracker, colour=None, offset=(0,0)):
     # Extract the roi
     p1, p2 = tracker.roi
     if colour is None:
         draw_colour = tracker.colour
     else:
         draw_colour = colour
+    # Add offset
+    if not tracker.roi_offset is None:
+        offset = tracker.roi_offset
+    p1 = (p1[0] + offset[0], p1[1] + offset[1])
+    p2 = (p2[0] + offset[0], p2[1] + offset[1])
     # Draw on the frame
     frame = cv.rectangle(frame, p1, p2, draw_colour, 3, 1)
+    if not tracker.label is None:
+        frame = place_id(tracker, frame, p2)
     return frame
     
-def draw_trackers(frame, trackers, colour=None):
+def draw_trackers(frame, trackers, colour=None, offset=(0,0)):
     for i in trackers:
-        frame = draw_tracker(frame, i, colour)
+        frame = draw_tracker(frame, i, colour, offset)
     return frame
 
 '''
@@ -73,3 +88,12 @@ def computeCenterRoi(roi):
     xc = (x2 + x1)/2.
     yc = (y2 + y1)/2.
     return (xc, yc)
+
+'''
+World utils
+'''
+def place_text(frame, text, position):
+    font = cv.FONT_HERSHEY_SIMPLEX
+    frame = cv.putText(frame, text, position, font, 1, \
+        (255,255,255), 2)
+    return frame

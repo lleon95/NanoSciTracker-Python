@@ -25,6 +25,7 @@ import copy
 import scene as Scene
 import LocalTracker.drawutils as DrawUtils
 
+
 class World:
     def __init__(self):
         self._scenes = []
@@ -33,7 +34,7 @@ class World:
         self._out_trackers = []
 
     def spawn_scenes(self, rois, overlapping=0, sampling_rate=3):
-        '''
+        """
         Creates the scenes by setting the ROIS (extrinsic parameter for the
         external reference system)
 
@@ -43,7 +44,7 @@ class World:
         * sampling_rate: how many times the detector is deployed
 
         Return: None
-        '''
+        """
         for roi in rois:
             self._scenes.append(
                 Scene.Scene(
@@ -61,6 +62,24 @@ class World:
         for i in range(len(self._scenes)):
             self._scenes[i].load_frame(frames[i])
 
+    def _update_current_trackers(self):
+        """
+        Updates the current trackers list, removing those trackers which
+        requires to be analysed for matching
+        """
+        # Unload those trackers who get out of scene
+        for tracker in self._out_trackers:
+            try:
+                self._current_trackers.remove(tracker)
+            except:
+                # The scene doesn't delete the out-of-scene immediately
+                continue
+
+        # FIXME: Match them before delete the variables
+        self._current_trackers += self._new_trackers
+        self._out_trackers = []
+        self._new_trackers = []
+
     def update_trackers(self, frames=None):
         """
         Updates the scene and its trackers
@@ -73,10 +92,10 @@ class World:
 
         for scene in self._scenes:
             cur, out, new = scene.update()
-            self._new_trackers += new 
+            self._new_trackers += new
             self._out_trackers += out
 
-        self._current_trackers += self._new_trackers
+        self._update_current_trackers()
 
     def label_scenes(self):
         """
@@ -98,6 +117,18 @@ class World:
         return frames
 
     def draw_trackers(self, world):
+        """
+        Draw trackers on the world canvas
+        This draws the world global tracker queues on the world canvas
+
+        Params:
+        * world: frame with the world
+
+        Returns:
+        * frame: copy of world with the overlay
+        """
         frame = copy.deepcopy(world)
-        return DrawUtils.draw_trackers(frame, self._current_trackers, \
-            (255,255,255))
+        frame = DrawUtils.draw_trackers(frame, self._current_trackers, (255, 255, 255))
+        frame = DrawUtils.draw_trackers(frame, self._new_trackers, (255, 0, 0))
+        frame = DrawUtils.draw_trackers(frame, self._out_trackers, (0, 0, 255))
+        return frame

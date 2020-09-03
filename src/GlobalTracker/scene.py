@@ -83,12 +83,16 @@ class Scene:
                 self.trackings)
             # Deploy new trackers accordingly
             self.trackers_new_detections = Tracker.deployTrackers(self.frame, \
-                self.new_detections, self.trackers, ROI=self.detection_roi)
+                self.new_detections, self.trackers, ROI=self.detection_roi,
+                offset=(self.x0, self.y0))
         # Perform tracking update
         self.trackings = self.track(self.frame)
         # Catch trackers which went out of scene
         self.trackers_out_scene = Tracker.retrieveOutScene(self.trackers)
         self.counter += 1
+
+        return (self.trackers, self.trackers_out_scene, \
+            self.trackers_new_detections)
     
     def draw(self, colour_frame):
         '''

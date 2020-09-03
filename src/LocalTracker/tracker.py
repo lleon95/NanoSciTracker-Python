@@ -40,13 +40,14 @@ def computeTrackerRoi(roi):
     return (x1, y1, x2 - x1, y2 - y1)
 
 class Tracker:
-    def __init__(self, colour, grayscale=True, timeout=5):
+    def __init__(self, colour, grayscale=True, timeout=5, offset=None):
         self.tracker = cv.TrackerKCF_create()
         self.colour = colour
         self.roi = None
         self.orig_roi  = None
         self.timeout = timeout
         self.grayscale = grayscale
+        self.roi_offset = offset
 
         # Label - Treated like an object for convenience
         self.label = None
@@ -173,10 +174,10 @@ def updateTrackers(frame, trackers, ROI=None):
             i += 1
     return trackers
 
-def deployTrackers(colour, bb_list, trackers, ROI=None):
+def deployTrackers(colour, bb_list, trackers, ROI=None, offset=None):
     newly_deployed = []
     for i in bb_list:
-        tracker = Tracker((0,255,0))
+        tracker = Tracker((0,255,0), offset=offset)
         do_add = tracker.init(colour, i, scene_roi=ROI)
         if do_add:
             trackers.append(tracker)

@@ -26,20 +26,25 @@ import cv2 as cv
 '''
 Painting tools for tracking
 '''
-def draw_tracker(frame, tracker, colour=None):
+def draw_tracker(frame, tracker, colour=None, offset=(0,0)):
     # Extract the roi
     p1, p2 = tracker.roi
     if colour is None:
         draw_colour = tracker.colour
     else:
         draw_colour = colour
+    # Add offset
+    if not tracker.roi_offset is None:
+        offset = tracker.roi_offset
+    p1 = (p1[0] + offset[0], p1[1] + offset[1])
+    p2 = (p2[0] + offset[0], p2[1] + offset[1])
     # Draw on the frame
     frame = cv.rectangle(frame, p1, p2, draw_colour, 3, 1)
     return frame
     
-def draw_trackers(frame, trackers, colour=None):
+def draw_trackers(frame, trackers, colour=None, offset=(0,0)):
     for i in trackers:
-        frame = draw_tracker(frame, i, colour)
+        frame = draw_tracker(frame, i, colour, offset)
     return frame
 
 '''

@@ -174,12 +174,14 @@ def updateTrackers(frame, trackers, ROI=None):
     return trackers
 
 def deployTrackers(colour, bb_list, trackers, ROI=None):
+    newly_deployed = []
     for i in bb_list:
         tracker = Tracker((0,255,0))
         do_add = tracker.init(colour, i, scene_roi=ROI)
         if do_add:
             trackers.append(tracker)
-    return trackers
+            newly_deployed.append(tracker)
+    return newly_deployed
 
 def retrieveBBs(trackers):
     bounding_boxes = []

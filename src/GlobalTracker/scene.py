@@ -53,6 +53,7 @@ class Scene:
         self.detections = []
         self.trackings = []
         self.new_detections = []
+        self.trackers_new_detections = []
         self.trackers_out_scene = []
 
         # Settings
@@ -81,7 +82,7 @@ class Scene:
             self.new_detections = Matcher.inter_match(self.detections, \
                 self.trackings)
             # Deploy new trackers accordingly
-            self.trackers = Tracker.deployTrackers(self.frame, \
+            self.trackers_new_detections = Tracker.deployTrackers(self.frame, \
                 self.new_detections, self.trackers, ROI=self.detection_roi)
         # Perform tracking update
         self.trackings = self.track(self.frame)

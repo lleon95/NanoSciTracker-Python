@@ -48,6 +48,9 @@ class Tracker:
         self.timeout = timeout
         self.grayscale = grayscale
 
+        # Label - Treated like an object for convenience
+        self.label = None
+
         # Hyperparams
         self.speed_bins = 30
         self.histo_lr = 0.1

@@ -29,17 +29,17 @@ class World:
         self._scenes = []
 
     def spawn_scenes(self, rois, overlapping=0, sampling_rate=3):
-    '''
-    Creates the scenes by setting the ROIS (extrinsic parameter for the
-    external reference system)
+        '''
+        Creates the scenes by setting the ROIS (extrinsic parameter for the
+        external reference system)
 
-    Params:
-    * rois: list([[x0, x1],[y0, y1]])
-    * overlapping: pixels of overlapping
-    * sampling_rate: how many times the detector is deployed
+        Params:
+        * rois: list([[x0, x1],[y0, y1]])
+        * overlapping: pixels of overlapping
+        * sampling_rate: how many times the detector is deployed
 
-    Return: None
-    '''
+        Return: None
+        '''
         for roi in rois:
             self._scenes.append(
                 Scene.Scene(

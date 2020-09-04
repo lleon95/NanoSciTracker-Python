@@ -50,13 +50,18 @@ class SpeedFeature():
         return self._compute()
 
 class Velocity(Feature):
-    def __init__(self, mmp=30):
+    def __init__(self, mmp=30, compare={"position": True, "speed": True, "angle": True}:
         super().__init__()
         # Feature - speed
         self.speed = None
         self.direction = None
         self.position = None
         self.mmp = mmp
+
+        # Comparison features
+        self.compare_position = compare["position"]
+        self.compare_speed = compare["speed"]
+        self.compare_direction = compare["angle"]
 
     def _computeDirection(self, dx, dy):
         return np.arctan2(dy, dx)
@@ -81,3 +86,29 @@ class Velocity(Feature):
 
     def predict(self):
         return True
+
+    def compare(self, velocity2):
+        feature_comparison = []
+        # Compare speed
+        if self.compare_speed:
+            X = np.linalg.norm(np.array(self.speed))
+            Y = np.linalg.norm(np.array(velocity2.speed))
+            diff = 2 * min(X, Y) / (X + Y)
+            feature_comparison.append(diff)
+        # Compare direction
+        if self.compare_direction:
+            X = self.direction
+            Y = velocity2.direction
+            diff = 2 * min(X, Y) / (X + Y)
+            feature_comparison.append(diff)
+        # Compare position
+        if self.compare_position:
+            X = np.array(self.position)
+            Y = np.array(velocity2.position)
+            normaliser = np.linalg.norm(X + Y)
+            X = X/normaliser
+            Y = Y/normaliser
+            distance = np.linalg.norm(X - Y)
+            feature_comparison.append(1 - distance)
+        
+        return np.array(feature_comparison)

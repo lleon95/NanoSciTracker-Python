@@ -21,6 +21,7 @@
 # This project was sponsored by CNR-IOM
 # Master in High-Performance Computing - SISSA
 
+import copy
 import cv2 as cv
 import numpy as np
 
@@ -58,4 +59,12 @@ class Histogram(Feature):
         return True
 
     def predict(self):
-        return True
+        return copy.deepcopy(self.histogram)
+
+    def compare(self, histo2):
+        # Applying Pearson correlation to it
+        X = self.predict().flatten()
+        Y = histo2.predict().flatten()
+        # Compute means and variances
+        r = np.corrcoef(X, Y)
+        return np.array([np.abs(r).mean()])

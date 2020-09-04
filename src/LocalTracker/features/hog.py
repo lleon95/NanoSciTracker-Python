@@ -21,6 +21,7 @@
 # This project was sponsored by CNR-IOM
 # Master in High-Performance Computing - SISSA
 
+import copy
 from skimage.feature import hog
 
 from features.feature import Feature
@@ -70,4 +71,12 @@ class Hog(Feature):
         return self.hog
 
     def predict(self):
-        return True
+        return copy.deepcopy(self.hog)
+
+    def compare(self, hog2):
+        # Applying Pearson correlation to it
+        X = self.predict().flatten()
+        Y = hog2.predict().flatten()
+        # Compute means and variances
+        r = np.corrcoef(X, Y)
+        return np.array([np.abs(r).mean()])

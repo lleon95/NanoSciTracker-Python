@@ -36,3 +36,6 @@ class Feature:
 
     def predict(self, **kwargs):
         return True
+
+    def compare(self, **kwargs):
+        return 0.

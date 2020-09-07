@@ -27,6 +27,18 @@ import cv2 as cv
 
 from features.feature import Feature
 
+'''
+Comparison predicates
+'''
+
+def PSR_Max(lhs, rhs, th=11.4):
+    M = max(lhs, rhs)
+    ret = M/th 
+    if ret > 1:
+        return 1
+    else:
+        return ret
+
 def randWarp(win):
     '''
     Auxiliar function
@@ -77,6 +89,7 @@ class MosseFilter(Feature):
         self.hanWin = None
         self.size = None
         self.f = None
+        self.PSR = 0
 
         # Hyper-parameters
         self.lr = lr
@@ -160,31 +173,37 @@ class MosseFilter(Feature):
         # Verify initialisation
         if self.H is None:
             return (False, bounding_box)
+        
+        w_f, h_f = self.size
+        p = [0,0]
 
         # Extract the window
-        p1, w, h = self.extractBoundingBox(bounding_box)
-        w_f, h_f = self.size
-        p = [p1[0], p1[1]]
+        if not bounding_box is None:
+            p1, w, h = self.extractBoundingBox(bounding_box)
+            
+            p = [p1[0], p1[1]]
 
-        c0 = p[0] + w/2
-        c1 = p[1] + h/2
-        center = (c0, c1)
+            c0 = p[0] + w/2
+            c1 = p[1] + h/2
+            center = (c0, c1)
 
-        # Align bounding boxes if needed
-        if w_f != w or h_f != h:
-            p[0] = int(c[0] - (w_f/2))
-            p[1] = int(c[1] - (h_f/2))
+            # Align bounding boxes if needed
+            if w_f != w or h_f != h:
+                p[0] = int(c[0] - (w_f/2))
+                p[1] = int(c[1] - (h_f/2))
+            
+            # Get window
+            window = cv.getRectSubPix(gray_image, self.size, center)
+            f = preprocess(window, self.hanWin)
         
-        # Get window
-        window = cv.getRectSubPix(gray_image, self.size, center)
-        f = preprocess(window, self.hanWin)
-        
-
+        else:
+            f = self.f
+            
         # Apply correlation
         F = np.fft.fft2(f)
         F_r = F * self.H
         f_r = np.real(np.fft.ifft2(F_r))
-        self.f = f_r
+        self.f = f
 
         # Find the PSR
         minVal, maxVal, minLoc, maxLoc = cv.minMaxLoc(f_r)
@@ -193,6 +212,7 @@ class MosseFilter(Feature):
         mean = np.mean(f_r)
         std = np.std(f_r)
         PSR = (maxVal-mean) / (std + 0.00001)
+        self.PSR = PSR
 
         # Threshold PSR
         if PSR < self.th:
@@ -245,4 +265,33 @@ class MosseFilter(Feature):
         self.H = self.A / self.B
 
         return res
-    
+
+    def compare(self, mosse2, predicate=PSR_Max):
+        '''
+        To compare, it computes the similarity between the filters in order to
+        see if they matches each other. The Threshold is set in times the
+        defined threshold for the tracker
+        '''
+        # Back up the images
+        f1 = copy.deepcopy(self.f)
+        f2 = copy.deepcopy(mosse2.f)
+        
+        self.f = f2
+        mosse2.f = f1
+        
+        # Predict
+        self.predict(None, None)
+        mosse2.predict(None, None)
+        
+        # Get the PSRs
+        PSR1 = self.PSR
+        PSR2 = mosse2.PSR
+        
+        # Get the distribution. The addition should be greater than th_t
+        ret = predicate(PSR1, PSR2)
+        
+        self.f = f1
+        mosse2.f = f2
+        
+        return np.array([ret])        
+        

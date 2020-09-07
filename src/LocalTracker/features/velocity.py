@@ -50,7 +50,7 @@ class SpeedFeature():
         return self._compute()
 
 class Velocity(Feature):
-    def __init__(self, mmp=30, compare={"position": True, "speed": True, "angle": True}:
+    def __init__(self, mmp=30, compare={"position": False, "speed": True, "angle": True}):
         super().__init__()
         # Feature - speed
         self.speed = None

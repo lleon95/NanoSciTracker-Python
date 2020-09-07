@@ -23,6 +23,7 @@
 import copy
 
 import scene as Scene
+import matcher as GlobalMatcher
 import LocalTracker.drawutils as DrawUtils
 
 
@@ -70,29 +71,17 @@ class World:
         requires to be analysed for matching
         """
         self._frame_cnt += 1
+        match_instance = GlobalMatcher.Matcher()
 
-        # Unload those trackers who get out of scene
-        for tracker in self._out_trackers:
-            try:
-                self._current_trackers.remove(tracker)
-            except:
-                # The scene doesn't delete the out-of-scene immediately
-                continue
-
-        # FIXME: Add a label and addition to the current list
-        for tracker in self._new_trackers:
-            # Labeling
-            if tracker.label is None:
-                self._last_id += 1
-                tracker.label = {"id": self._last_id, "time": self._frame_cnt}
-            
-            # Adding to the current list
-            if not tracker in self._current_trackers:
-                self._current_trackers.append(tracker)
-
-        # FIXME: Match them before delete the variables
-        self._out_trackers = []
-        self._new_trackers = []
+        # Perform matching
+        res = match_instance.match(self._current_trackers, self._new_trackers, \
+            self._out_trackers)
+        self._current_trackers, self._new_trackers, self._out_trackers = res
+        
+        # Perform cleaning
+        self._last_id = match_instance.clean(self._current_trackers, \
+            self._new_trackers, self._out_trackers, self._last_id, \
+            self._frame_cnt)
 
     def update_trackers(self, frames=None):
         """

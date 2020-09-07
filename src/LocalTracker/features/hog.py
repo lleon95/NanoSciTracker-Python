@@ -22,6 +22,7 @@
 # Master in High-Performance Computing - SISSA
 
 import copy
+import numpy as np
 from skimage.feature import hog
 
 from features.feature import Feature

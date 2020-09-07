@@ -68,6 +68,7 @@ class Tracker:
         self.mosse_valid = False
         self.stable = True
         self.out_roi = False
+        self.death_time = 0
 
     def _validate_roi(self, ROI):
         if not ROI is None:

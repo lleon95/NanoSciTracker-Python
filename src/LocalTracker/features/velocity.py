@@ -88,19 +88,21 @@ class Velocity(Feature):
         return True
 
     def compare(self, velocity2):
-        feature_comparison = []
+        feature_comparison = np.zeros((3,))
         # Compare speed
         if self.compare_speed:
-            X = np.linalg.norm(np.array(self.speed))
-            Y = np.linalg.norm(np.array(velocity2.speed))
+            x_v = [self.speed[0].speed, self.speed[1].speed]
+            y_v = [velocity2.speed[0].speed, velocity2.speed[1].speed]
+            X = np.linalg.norm(np.array(x_v))
+            Y = np.linalg.norm(np.array(y_v))
             diff = 2 * min(X, Y) / (X + Y)
-            feature_comparison.append(diff)
+            feature_comparison[0] = diff
         # Compare direction
         if self.compare_direction:
             X = self.direction
             Y = velocity2.direction
             diff = 2 * min(X, Y) / (X + Y)
-            feature_comparison.append(diff)
+            feature_comparison[1] = diff
         # Compare position
         if self.compare_position:
             X = np.array(self.position)
@@ -109,6 +111,6 @@ class Velocity(Feature):
             X = X/normaliser
             Y = Y/normaliser
             distance = np.linalg.norm(X - Y)
-            feature_comparison.append(1 - distance)
+            feature_comparison[2] = 1 - distance
         
         return np.array(feature_comparison)

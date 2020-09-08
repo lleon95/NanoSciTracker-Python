@@ -62,7 +62,7 @@ class Histogram(Feature):
         return copy.deepcopy(self.histogram)
 
     def compare(self, histo2):
-        # Applying Pearson correlation to it
+        # Applying Bhattacharyya to it
         X = self.predict().flatten()
         Y = histo2.predict().flatten()
         # Normalise to 1

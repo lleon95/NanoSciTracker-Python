@@ -75,9 +75,12 @@ class Hog(Feature):
         return copy.deepcopy(self.hog)
 
     def compare(self, hog2):
-        # Applying Pearson correlation to it
+        # Applying Bhattacharyya to it
         X = self.predict().flatten()
         Y = hog2.predict().flatten()
-        # Compute means and variances
-        r = np.corrcoef(X, Y)
-        return np.array([np.abs(r).mean()])
+        # Normalise to 1
+        X /= np.sum(X)
+        Y /= np.sum(Y)
+        # Compute the Bhattacharyya
+        bc = np.sum(np.sqrt(X * Y))
+        return np.array([bc])

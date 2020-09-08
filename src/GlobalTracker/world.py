@@ -79,7 +79,8 @@ class World:
         self._current_trackers, self._new_trackers, self._out_trackers = res
         
         # Perform cleaning
-        self._last_id = match_instance.clean(self._current_trackers, \
+        self._last_id, self._current_trackers, \
+            self._new_trackers, self._out_trackers = match_instance.clean(self._current_trackers, \
             self._new_trackers, self._out_trackers, self._last_id, \
             self._frame_cnt)
 

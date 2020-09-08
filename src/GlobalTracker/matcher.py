@@ -43,21 +43,21 @@ class Matcher:
         self.ce_position = True
         self.ce_velocity = True
         self.ce_angle = True
-        self.ce_hog = True
+        self.ce_hog = False
         self.ce_histogram = True
         self.ce_mosse = False # FIXME
         
         # Weights
-        self.w_position = 0.4
-        self.w_velocity = 0.1
-        self.w_angle = 0.2
-        self.w_hog = 0.1
-        self.w_histogram = 0.2
-        self.w_mosse = 0.05
+        self.w_position = 1
+        self.w_velocity = 0.9
+        self.w_angle = 1
+        self.w_hog = 1.
+        self.w_histogram = 1
+        self.w_mosse = 1.
         
         # Probability Threshold
-        self.threshold = 0.5
-        self.max_death_time = 10
+        self.threshold = 0.15
+        self.max_death_time = 120
         
     def _compare_histogram(self, lhs, rhs):
         '''
@@ -67,8 +67,8 @@ class Matcher:
         Returns:
         - normalised probability (the closer, the higher)
         '''
-        if not self.ce_hog:
-            return np.array([0.])
+        if not self.ce_histogram:
+            return np.array([1.])
         
         histo1 = lhs.histogram
         histo2 = rhs.histogram
@@ -84,8 +84,8 @@ class Matcher:
         Returns:
         - normalised probability (the closer, the higher)
         '''
-        if not self.ce_hog:
-            return np.array([0.])
+        if not self.ce_mosse:
+            return np.array([1.])
         
         mosse1 = lhs.mosse
         mosse2 = rhs.mosse
@@ -102,7 +102,7 @@ class Matcher:
         - normalised probability (the closer, the higher)
         '''
         if not self.ce_hog:
-            return np.array([0.])
+            return np.array([1.])
         
         hog1 = lhs.hog
         hog2 = rhs.hog
@@ -119,7 +119,7 @@ class Matcher:
         - normalised probability (the closer, the higher)
         '''
         if not self.ce_velocity and not self.ce_angle:
-            return np.array([0., 0.])
+            return np.array([1., 1.])
         
         vel1 = lhs.velocity
         vel2 = rhs.velocity
@@ -141,11 +141,23 @@ class Matcher:
         - normalised probability (the closer, the higher)
         '''
         if not self.ce_position:
-            return 0.
-        
-        X = np.array(lhs.position)
-        Y = np.array(rhs.position)
-        normaliser = np.linalg.norm(X + Y)
+            return np.array([1.])
+
+        if lhs.roi_offset is None:
+            lroi = (0,0)
+        else:
+            lroi = lhs.roi_offset
+        if rhs.roi_offset is None:
+            rroi = (0,0)
+        else:
+            rroi = rhs.roi_offset
+
+        lpos = [lhs.position[0] + lroi[0], lhs.position[1] + lroi[1]]
+        rpos = [rhs.position[0] + rroi[0], rhs.position[1] + rroi[1]]
+
+        X = np.array(lpos)
+        Y = np.array(rpos)
+        normaliser = np.linalg.norm([1200,1400])
         X = X/normaliser
         Y = Y/normaliser
         distance = np.linalg.norm(X - Y)
@@ -161,8 +173,8 @@ class Matcher:
                 continue
             
         for out_ in out_v:
-            out_v.death_time += 1
-            if out_v.death_time == 10:
+            out_.death_time += 1
+            if out_.death_time == self.max_death_time:
                 out_v.remove(out_)
                 
         for new_ in new_v:
@@ -175,7 +187,7 @@ class Matcher:
                 cur_v.append(new_)
                 
         new_v = []
-        return last_idx
+        return last_idx, cur_v, new_v, out_v
     
     def match(self, cur_v, new_v, out_v):
         '''
@@ -187,7 +199,7 @@ class Matcher:
         - out_v: not matched
         - cur_v: updated list
         '''
-        out_local = copy.copy(out_v)
+        out_local = list(set(out_v))
         new_local = copy.copy(new_v)
         cur_local = copy.copy(cur_v)
         
@@ -218,11 +230,12 @@ class Matcher:
                 weights[5] = self.w_mosse * \
                     self._compare_mosse(new_, out_)[0]
                 # Probability Superposition
-                probabilities[cnt] = weights.sum()
+                probabilities[cnt] = weights.prod()
                 cnt += 1
             
             # Find the maximum (argmax)
             max_idx = np.argmax(probabilities)
+            print("probs", probabilities)
             max_val = probabilities[max_idx]
             
             if max_val >= self.threshold:

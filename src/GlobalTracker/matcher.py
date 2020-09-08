@@ -157,9 +157,11 @@ class Matcher:
 
         X = np.array(lpos)
         Y = np.array(rpos)
+        # Normalise respect to the maximum distance
         normaliser = np.linalg.norm([1200,1400])
         X = X/normaliser
         Y = Y/normaliser
+        # Compute the distance
         distance = np.linalg.norm(X - Y)
         
         return np.array([1 - distance])

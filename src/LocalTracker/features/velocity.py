@@ -91,12 +91,13 @@ class Velocity(Feature):
         feature_comparison = np.zeros((3,))
         # Compare speed
         if self.compare_speed:
+            normaliser = np.linalg.norm([1200,1400])
             x_v = [self.speed[0].speed, self.speed[1].speed]
             y_v = [velocity2.speed[0].speed, velocity2.speed[1].speed]
-            X = np.linalg.norm(np.array(x_v))
-            Y = np.linalg.norm(np.array(y_v))
-            diff = 2 * min(X, Y) / (X + Y)
-            feature_comparison[0] = diff
+            x_v /= normaliser
+            y_v /= normaliser
+            diff = np.linalg.norm(x_v - y_v)
+            feature_comparison[0] = 1 - diff
         # Compare direction
         if self.compare_direction:
             X = np.array(self.position)

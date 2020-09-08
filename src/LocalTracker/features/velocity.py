@@ -99,10 +99,12 @@ class Velocity(Feature):
             feature_comparison[0] = diff
         # Compare direction
         if self.compare_direction:
-            X = self.direction
-            Y = velocity2.direction
-            diff = 2 * min(X, Y) / (X + Y)
-            feature_comparison[1] = diff
+            X = np.array(self.position)
+            Y = np.array(velocity2.position)
+            # Normalise
+            X /= np.linalg.norm(X)
+            Y /= np.linalg.norm(Y)
+            feature_comparison[1] = X.dot(Y)
         # Compare position
         if self.compare_position:
             X = np.array(self.position)

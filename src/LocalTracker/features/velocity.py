@@ -97,7 +97,7 @@ class Velocity(Feature):
             x_v /= normaliser
             y_v /= normaliser
             diff = np.linalg.norm(x_v - y_v)
-            feature_comparison[0] = 1 - diff
+            feature_comparison[0] = diff
         # Compare direction
         if self.compare_direction:
             X = np.array(self.position)

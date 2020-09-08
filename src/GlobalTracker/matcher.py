@@ -48,15 +48,15 @@ class Matcher:
         self.ce_mosse = False # FIXME
         
         # Weights
-        self.w_position = 1
-        self.w_velocity = 0.9
-        self.w_angle = 1
-        self.w_hog = 1.
-        self.w_histogram = 1
-        self.w_mosse = 1.
+        self.w_position = -0.3
+        self.w_velocity = -0.2
+        self.w_angle = 0.2
+        self.w_hog = 0.
+        self.w_histogram = 0.4
+        self.w_mosse = 0.
         
         # Probability Threshold
-        self.threshold = 0.15
+        self.threshold = 0.30
         self.max_death_time = 120
         
     def _compare_histogram(self, lhs, rhs):
@@ -68,7 +68,7 @@ class Matcher:
         - normalised probability (the closer, the higher)
         '''
         if not self.ce_histogram:
-            return np.array([1.])
+            return np.array([0.])
         
         histo1 = lhs.histogram
         histo2 = rhs.histogram
@@ -85,7 +85,7 @@ class Matcher:
         - normalised probability (the closer, the higher)
         '''
         if not self.ce_mosse:
-            return np.array([1.])
+            return np.array([0.])
         
         mosse1 = lhs.mosse
         mosse2 = rhs.mosse
@@ -102,7 +102,7 @@ class Matcher:
         - normalised probability (the closer, the higher)
         '''
         if not self.ce_hog:
-            return np.array([1.])
+            return np.array([0.])
         
         hog1 = lhs.hog
         hog2 = rhs.hog
@@ -119,7 +119,7 @@ class Matcher:
         - normalised probability (the closer, the higher)
         '''
         if not self.ce_velocity and not self.ce_angle:
-            return np.array([1., 1.])
+            return np.array([0., 0.])
         
         vel1 = lhs.velocity
         vel2 = rhs.velocity
@@ -141,7 +141,7 @@ class Matcher:
         - normalised probability (the closer, the higher)
         '''
         if not self.ce_position:
-            return np.array([1.])
+            return np.array([0.])
 
         if lhs.roi_offset is None:
             lroi = (0,0)
@@ -164,7 +164,7 @@ class Matcher:
         # Compute the distance
         distance = np.linalg.norm(X - Y)
         
-        return np.array([1 - distance])
+        return np.array([distance])
     
     def clean(self, cur_v, new_v, out_v, last_idx, frame_cnt):
         for tracker in out_v:
@@ -232,7 +232,9 @@ class Matcher:
                 weights[5] = self.w_mosse * \
                     self._compare_mosse(new_, out_)[0]
                 # Probability Superposition
-                probabilities[cnt] = weights.prod()
+                probabilities[cnt] = weights.sum()
+                print("probs", weights, "sum", probabilities[cnt],
+                "label", out_.label)
                 cnt += 1
             
             # Find the maximum (argmax)

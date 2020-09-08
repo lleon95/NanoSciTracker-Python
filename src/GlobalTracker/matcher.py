@@ -233,13 +233,10 @@ class Matcher:
                     self._compare_mosse(new_, out_)[0]
                 # Probability Superposition
                 probabilities[cnt] = weights.sum()
-                print("probs", weights, "sum", probabilities[cnt],
-                "label", out_.label)
                 cnt += 1
             
             # Find the maximum (argmax)
             max_idx = np.argmax(probabilities)
-            print("probs", probabilities)
             max_val = probabilities[max_idx]
             
             if max_val >= self.threshold:

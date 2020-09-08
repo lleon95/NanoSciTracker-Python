@@ -62,9 +62,11 @@ class Histogram(Feature):
         return copy.deepcopy(self.histogram)
 
     def compare(self, histo2):
-        # Applying Pearson correlation to it
         X = self.predict().flatten()
         Y = histo2.predict().flatten()
-        # Compute means and variances
-        r = np.corrcoef(X, Y)
-        return np.array([np.abs(r).mean()])
+        # Normalise to 1
+        X /= np.linalg.norm(X)
+        Y /= np.linalg.norm(Y)
+        # Compute the Bhattacarya
+        bc = np.sum(np.sqrt(X * Y))
+        return np.array([bc])

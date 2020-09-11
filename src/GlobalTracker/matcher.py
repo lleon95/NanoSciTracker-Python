@@ -180,7 +180,17 @@ class Matcher:
                 out_v.remove(out_)
         
         new_to_continue = []
+
+        for cur_ in cur_v:
+            # Check if it is already timed-out
+            if cur_.timeout == 0:
+                cur_v.remove(cur_)
+
         for new_ in new_v:
+            # Check if it is already timed-out
+            if new_.timeout == 0:
+                continue
+
             # Skipping until having the right number of samples
             if new_.samples < new_.sample_bins:
                 new_to_continue.append(new_)

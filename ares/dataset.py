@@ -38,13 +38,13 @@ def sortKey(name):
     return X
 
 
-def dataset(path="../data/ctrl6_72h", n=4, resizeTo=(640, 480)):
+def load(path="../data/ctrl6_72h", n=4, resizeTo=(640, 480)):
     """
     Get a numpy array with the shape (n, m, h, w), where n is the number of scenes,
     m is the number of frames, h is the image height and w is the image width
     """
     normalisation = 2048
-    black_offset = 32
+    black_offset = 64
 
     files = glob.glob(path + "/*.tif")
     files.sort(key=sortKey)
@@ -77,4 +77,4 @@ def dataset(path="../data/ctrl6_72h", n=4, resizeTo=(640, 480)):
         data[mod].append(tiff)
 
     # Convert into numpy array
-    return np.array(data).shape
+    return np.array(data), [i for i in range(n)]

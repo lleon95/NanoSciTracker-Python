@@ -279,7 +279,7 @@ class MosseFilter(Feature):
         if PSR1 < 1e-7:
             ret = 1
         else:
-            ret = PSR1
+            ret = 1./PSR1
         
         mosse2.last_frame = self.last_frame
         self.last_frame = swap

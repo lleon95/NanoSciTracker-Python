@@ -27,18 +27,6 @@ import cv2 as cv
 
 from features.feature import Feature
 
-'''
-Comparison predicates
-'''
-
-def PSR_Max(lhs, rhs, th=11.4):
-    M = max(lhs, rhs)
-    ret = M/th 
-    if ret > 1:
-        return 1
-    else:
-        return ret
-
 def randWarp(win):
     '''
     Auxiliar function
@@ -156,10 +144,10 @@ class MosseFilter(Feature):
             self.A += A_i
             self.B += B_i
 
-        if np.isin(0 + 0j, self.B).any():
-            return False
-        
-        self.H = self.A / self.B
+        mask_b = np.ma.array(self.B, mask=(self.B==0))
+        self.H = self.A / mask_b
+        self.H = self.H.filled(0.)
+
         return True
 
     def predict(self, gray_image, bounding_box):
@@ -263,11 +251,14 @@ class MosseFilter(Feature):
         # Learn
         self.A = self.A*(1 - self.lr) + A_new * self.lr
         self.B = self.B*(1 - self.lr) + B_new * self.lr
-        self.H = self.A / self.B
+
+        mask_b = np.ma.array(self.B, mask=(self.B==0))
+        self.H = self.A / mask_b
+        self.H = self.H.filled(0.)
 
         return res
 
-    def compare(self, mosse2, predicate=PSR_Max):
+    def compare(self, mosse2):
         '''
         To compare, it computes the similarity between the filters in order to
         see if they matches each other. The Threshold is set in times the
@@ -280,14 +271,15 @@ class MosseFilter(Feature):
         
         # Predict
         self.predict(None, None)
-        mosse2.predict(None, None)
         
         # Get the PSRs
         PSR1 = self.PSR
-        PSR2 = mosse2.PSR
         
         # Get the distribution. The addition should be greater than th_t
-        ret = predicate(PSR1, PSR2)
+        if PSR1 < 1e-7:
+            ret = 1
+        else:
+            ret = PSR1
         
         mosse2.last_frame = self.last_frame
         self.last_frame = swap

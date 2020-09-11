@@ -35,17 +35,6 @@ import Playground.generator as Generator
 import GlobalTracker.world as World
 import GlobalTracker.utils as Utils
 
-def build_rois(roi_size, overlapping):
-  h, w = roi_size
-  h_p = h - overlapping
-  w_p = w - overlapping
-
-  ROIS = [((0,w),(0,h)),
-       ((w_p,w_p + w),(h_p, h_p + h)),
-       ((0,w),(h_p,h_p+h)),
-       ((w_p,w_p+w),(0,h))]
-  return ROIS
-
 def main(args):
   # Generate the world
   my_world = Generator.World(playground_size=args.world_size,
@@ -57,7 +46,7 @@ def main(args):
   tracking_world = World.World()
   
   # Generate scenes
-  rois = build_rois(args.scene_size, args.overlapping)
+  rois = Utils.build_rois(args.scene_size, args.overlapping)
   tracking_world.spawn_scenes(rois, args.overlapping, \
     args.sampling_rate_detection)
 

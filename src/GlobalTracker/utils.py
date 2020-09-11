@@ -29,3 +29,14 @@ def draw_roi(world, rois):
     p1, p2 = roi
     world = cv.rectangle(world, (p1[0], p2[0]), (p1[1], p2[1]), (128,128,128), 2)
   return world
+
+def build_rois(roi_size, overlapping):
+  h, w = roi_size
+  h_p = h - overlapping
+  w_p = w - overlapping
+
+  ROIS = [((0,w),(0,h)),
+       ((w_p,w_p + w),(h_p, h_p + h)),
+       ((0,w),(h_p,h_p+h)),
+       ((w_p,w_p+w),(0,h))]
+  return ROIS

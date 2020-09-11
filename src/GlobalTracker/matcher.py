@@ -56,7 +56,7 @@ class Matcher:
         self.w_mosse = 0.
         
         # Probability Threshold
-        self.threshold = 0.30
+        self.threshold = 0.45
         self.max_death_time = 120
         
     def _compare_histogram(self, lhs, rhs):
@@ -178,8 +178,14 @@ class Matcher:
             out_.death_time += 1
             if out_.death_time == self.max_death_time:
                 out_v.remove(out_)
-                
+        
+        new_to_continue = []
         for new_ in new_v:
+            # Skipping until having the right number of samples
+            if new_.samples < new_.sample_bins:
+                new_to_continue.append(new_)
+                continue
+
             # Labeling
             if new_.label is None:
                 last_idx += 1
@@ -189,7 +195,7 @@ class Matcher:
                 cur_v.append(new_)
                 
         new_v = []
-        return last_idx, cur_v, new_v, out_v
+        return last_idx, cur_v, new_to_continue, out_v
     
     def match(self, cur_v, new_v, out_v):
         '''
@@ -211,6 +217,9 @@ class Matcher:
                 break
             probabilities = np.zeros((n_old,), dtype=np.float32)
             cnt = 0
+
+            if new_.samples < new_.sample_bins:
+                continue
             
             # Find the probabilities of all the trackers
             for out_ in out_local:

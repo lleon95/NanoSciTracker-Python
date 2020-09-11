@@ -90,6 +90,8 @@ class MosseFilter(Feature):
         self.size = None
         self.f = None
         self.PSR = 0
+        self.last_frame = None
+        self.center = None
 
         # Hyper-parameters
         self.lr = lr
@@ -116,6 +118,7 @@ class MosseFilter(Feature):
         complex representation and allows to do Spectrum Multiplciation and
         Vision in a straight-forward fashion
         '''
+        self.last_frame = gray_image
         p1, w, h = self.extractBoundingBox(bounding_box)
         p1, p2 = bounding_box
         cols = p2[0] - p1[0]
@@ -124,10 +127,10 @@ class MosseFilter(Feature):
         self.size = (w, h)
         x1 = int(round((2 * p1[0] + cols - w)/2))
         y1 = int(round((2 * p1[1] + rows - h)/2))
-        center = (x1 + (w/2), y1 + (h/2))
+        self.center = (x1 + (w/2), y1 + (h/2))
 
         # Get inputs - window from BBox and the HanningWindow for gaussianity
-        window = cv.getRectSubPix(gray_image, self.size, center)
+        window = cv.getRectSubPix(gray_image, self.size, self.center)
         self.hanWin = cv.createHanningWindow(self.size, cv.CV_32F)
 
         # Create goal and its FFT
@@ -146,8 +149,8 @@ class MosseFilter(Feature):
         # Train the filter with a random warping
         for i in range(8):
             warped = randWarp(window)
-            f = preprocess(warped, self.hanWin)
-            F = np.fft.fft2(f)
+            self.f = preprocess(warped, self.hanWin)
+            F = np.fft.fft2(self.f)
             A_i = self.G * np.conjugate(F)
             B_i = F * np.conjugate(F)
             self.A += A_i
@@ -185,30 +188,26 @@ class MosseFilter(Feature):
 
             c0 = p[0] + w/2
             c1 = p[1] + h/2
-            center = (c0, c1)
+            self.center = (c0, c1)
 
             # Align bounding boxes if needed
             if w_f != w or h_f != h:
                 p[0] = int(c[0] - (w_f/2))
                 p[1] = int(c[1] - (h_f/2))
-            
-            # Get window
-            window = cv.getRectSubPix(gray_image, self.size, center)
-            f = preprocess(window, self.hanWin)
-        
-        else:
-            f = self.f
-            
+
+            self.last_frame = gray_image
+
+        # Get window
+        window = cv.getRectSubPix(self.last_frame, self.size, self.center)
+        self.f = preprocess(window, self.hanWin)
         # Apply correlation
-        F = np.fft.fft2(f)
+        F = np.fft.fft2(self.f)
         F_r = F * self.H
         f_r = np.real(np.fft.ifft2(F_r))
-        self.f = f
-
         # Find the PSR
         minVal, maxVal, minLoc, maxLoc = cv.minMaxLoc(f_r)
-        delta_x = maxLoc[0] - w/2
-        delta_y = maxLoc[1] - h/2
+        delta_x = maxLoc[0] - w_f/2
+        delta_y = maxLoc[1] - h_f/2
         mean = np.mean(f_r)
         std = np.std(f_r)
         PSR = (maxVal-mean) / (std + 0.00001)
@@ -239,6 +238,8 @@ class MosseFilter(Feature):
         # Verify initialisation
         if self.H is None:
             return False
+        
+        self.last_frame = gray_image
 
         # Make prediction
         res, bbox = self.predict(gray_image, bounding_box)
@@ -248,12 +249,12 @@ class MosseFilter(Feature):
 
         # Update the filter
         p1, w, h = self.extractBoundingBox(bounding_box)
-        center = (p1[0] + w/2, p1[1] + h/2)
-        window_new = cv.getRectSubPix(gray_image, self.size, center)
+        self.center = (p1[0] + w/2, p1[1] + h/2)
+        window_new = cv.getRectSubPix(gray_image, self.size, self.center)
 
         # Compute new F
-        f = preprocess(window_new, self.hanWin)
-        F = np.fft.fft2(f)
+        self.f = preprocess(window_new, self.hanWin)
+        F = np.fft.fft2(self.f)
 
         # Extract the filter
         A_new = self.G * np.conjugate(F)
@@ -273,11 +274,9 @@ class MosseFilter(Feature):
         defined threshold for the tracker
         '''
         # Back up the images
-        f1 = copy.deepcopy(self.f)
-        f2 = copy.deepcopy(mosse2.f)
-        
-        self.f = f2
-        mosse2.f = f1
+        swap = self.last_frame
+        self.last_frame = mosse2.last_frame
+        mosse2.last_frame = swap
         
         # Predict
         self.predict(None, None)
@@ -290,8 +289,8 @@ class MosseFilter(Feature):
         # Get the distribution. The addition should be greater than th_t
         ret = predicate(PSR1, PSR2)
         
-        self.f = f1
-        mosse2.f = f2
+        mosse2.last_frame = self.last_frame
+        self.last_frame = swap
         
         return np.array([ret])        
         

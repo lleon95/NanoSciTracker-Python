@@ -40,7 +40,7 @@ def computeTrackerRoi(roi):
     return (x1, y1, x2 - x1, y2 - y1)
 
 class Tracker:
-    def __init__(self, colour, grayscale=True, timeout=5, offset=None):
+    def __init__(self, colour, grayscale=True, timeout=15, offset=None):
         self.tracker = cv.TrackerKCF_create()
         self.colour = colour
         self.roi = None
@@ -53,11 +53,11 @@ class Tracker:
         self.label = None
 
         # Hyperparams
-        self.speed_bins = 30
+        self.sample_bins = 15
         self.histo_lr = 0.1
 
         # Features
-        self.velocity = Velocity()
+        self.velocity = Velocity(mmp=self.sample_bins)
         self.histogram = Histogram(grayscale)
         self.hog = Hog()
         self.position = None
@@ -68,6 +68,8 @@ class Tracker:
         self.mosse_valid = False
         self.stable = True
         self.out_roi = False
+        self.death_time = 0
+        self.samples = 0
 
     def _validate_roi(self, ROI):
         if not ROI is None:
@@ -148,6 +150,7 @@ class Tracker:
 
         # Update features
         self._update_speed()
+        self.samples += 1
 
         self.out_roi = True
         if self._validate_roi(ROI):
@@ -176,10 +179,10 @@ def updateTrackers(frame, trackers, ROI=None):
             i += 1
     return trackers
 
-def deployTrackers(colour, bb_list, trackers, ROI=None, offset=None):
+def deployTrackers(colour, bb_list, trackers, ROI=None, offset=None, grayscale=True):
     newly_deployed = []
     for i in bb_list:
-        tracker = Tracker((0,255,0), offset=offset)
+        tracker = Tracker((0,255,0), offset=offset, grayscale=grayscale)
         do_add = tracker.init(colour, i, scene_roi=ROI)
         if do_add:
             trackers.append(tracker)

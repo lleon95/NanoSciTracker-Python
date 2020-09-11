@@ -33,6 +33,7 @@ sys.path.append("../GlobalTracker/")
 
 import Playground.generator as Generator
 import GlobalTracker.world as World
+import GlobalTracker.utils as Utils
 
 def build_rois(roi_size, overlapping):
   h, w = roi_size
@@ -60,6 +61,10 @@ def main(args):
   tracking_world.spawn_scenes(rois, args.overlapping, \
     args.sampling_rate_detection)
 
+  if args.record:
+    fourcc = cv.VideoWriter_fourcc(*'MP4V')
+    record = cv.VideoWriter('./video.mp4',fourcc, 25, (1400,1200), True)
+
   # Run the simulation
   while(my_world.update()):
     drawing = my_world.draw()
@@ -70,18 +75,23 @@ def main(args):
 
     # Update scenes
     tracking_world.update_trackers(frames)
-    '''
-    labeled_frames = tracking_world.label_scenes()
-    for i in range(len(labeled_frames)):
-      # Display
-      cv.imshow("Scene " + str(i+1), labeled_frames[i])
-      cv.waitKey(1)
-    '''
+
+    # Draw rectange overlay to determine where are the ROIS
+    Utils.draw_roi(drawing, rois)
+
+    # Label the world objects
     world_labeled = tracking_world.draw_trackers(drawing)
     cv.imshow("World", world_labeled)
+
+    if args.record:
+      record.write(world_labeled)
     cv.waitKey(1)
 
     time.sleep(args.delay_player)
+  
+  if args.record:
+    record.release()
+
 
 if __name__ == "__main__":
   # Handle the arguments
@@ -107,6 +117,8 @@ if __name__ == "__main__":
   parser.add_argument('--sampling_rate_detection', type=float,
                       help='Decimation of the detection',
                       default=3)
+  parser.add_argument('--record', type=bool, help='Enable video recording',
+                      default=False)
   
   args = parser.parse_args()
   main(args)

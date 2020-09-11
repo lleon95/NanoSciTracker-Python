@@ -21,6 +21,8 @@
 # This project was sponsored by CNR-IOM
 # Master in High-Performance Computing - SISSA
 
+import copy
+import numpy as np
 from skimage.feature import hog
 
 from features.feature import Feature
@@ -70,4 +72,15 @@ class Hog(Feature):
         return self.hog
 
     def predict(self):
-        return True
+        return copy.deepcopy(self.hog)
+
+    def compare(self, hog2):
+        # Applying Bhattacharyya to it
+        X = self.predict().flatten()
+        Y = hog2.predict().flatten()
+        # Normalise to 1
+        X /= np.sum(X)
+        Y /= np.sum(Y)
+        # Compute the Bhattacharyya
+        bc = np.sum(np.sqrt(X * Y))
+        return np.array([bc])

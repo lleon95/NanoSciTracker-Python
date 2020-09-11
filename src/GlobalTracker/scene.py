@@ -84,7 +84,7 @@ class Scene:
             # Deploy new trackers accordingly
             self.trackers_new_detections = Tracker.deployTrackers(self.frame, \
                 self.new_detections, self.trackers, ROI=self.detection_roi,
-                offset=(self.x0, self.y0))
+                offset=(self.x0, self.y0), grayscale=False)
         # Perform tracking update
         self.trackings = self.track(self.frame)
         # Catch trackers which went out of scene

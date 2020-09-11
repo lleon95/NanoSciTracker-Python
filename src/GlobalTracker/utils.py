@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # NanoSciTracker - 2020
 # Author: Luis G. Leon Vega <luis@luisleon.me>
 # 
@@ -21,21 +22,10 @@
 # This project was sponsored by CNR-IOM
 # Master in High-Performance Computing - SISSA
 
-class Feature:
-    '''
-    Skeleton for formating the feature and following a standard
-    '''
-    def __init__(self):
-        self.lr = 0.2
+import cv2 as cv
 
-    def update(self, **kwargs):
-        return True
-
-    def initialise(self, **kwargs):
-        return True
-
-    def predict(self, **kwargs):
-        return True
-
-    def compare(self, **kwargs):
-        return 0.
+def draw_roi(world, rois):
+  for roi in rois:
+    p1, p2 = roi
+    world = cv.rectangle(world, (p1[0], p2[0]), (p1[1], p2[1]), (128,128,128), 2)
+  return world

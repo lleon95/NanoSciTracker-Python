@@ -60,6 +60,10 @@ def main(args):
   tracking_world.spawn_scenes(rois, args.overlapping, \
     args.sampling_rate_detection)
 
+  if args.record:
+    fourcc = cv.VideoWriter_fourcc(*'MP4V')
+    record = cv.VideoWriter('./video.mp4',fourcc, 25, (1400,1200), True)
+
   # Run the simulation
   while(my_world.update()):
     drawing = my_world.draw()
@@ -79,9 +83,16 @@ def main(args):
     '''
     world_labeled = tracking_world.draw_trackers(drawing)
     cv.imshow("World", world_labeled)
+
+    if args.record:
+      record.write(world_labeled)
     cv.waitKey(1)
 
     time.sleep(args.delay_player)
+  
+  if args.record:
+    record.release()
+
 
 if __name__ == "__main__":
   # Handle the arguments
@@ -107,6 +118,8 @@ if __name__ == "__main__":
   parser.add_argument('--sampling_rate_detection', type=float,
                       help='Decimation of the detection',
                       default=3)
+  parser.add_argument('--record', type=bool, help='Enable video recording',
+                      default=False)
   
   args = parser.parse_args()
   main(args)

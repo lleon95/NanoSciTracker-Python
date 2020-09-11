@@ -33,6 +33,7 @@ sys.path.append("../GlobalTracker/")
 
 import Playground.generator as Generator
 import GlobalTracker.world as World
+import GlobalTracker.utils as Utils
 
 def build_rois(roi_size, overlapping):
   h, w = roi_size
@@ -74,13 +75,11 @@ def main(args):
 
     # Update scenes
     tracking_world.update_trackers(frames)
-    '''
-    labeled_frames = tracking_world.label_scenes()
-    for i in range(len(labeled_frames)):
-      # Display
-      cv.imshow("Scene " + str(i+1), labeled_frames[i])
-      cv.waitKey(1)
-    '''
+
+    # Draw rectange overlay to determine where are the ROIS
+    Utils.draw_roi(drawing, rois)
+
+    # Label the world objects
     world_labeled = tracking_world.draw_trackers(drawing)
     cv.imshow("World", world_labeled)
 

@@ -102,7 +102,6 @@ class Velocity(Feature):
         if self.compare_direction:
             X = [self.speed[0].speed, self.speed[1].speed]
             Y = [velocity2.speed[0].speed, velocity2.speed[1].speed]
-            print(X, Y)
             # Normalise
             X /= np.linalg.norm(X)
             Y /= np.linalg.norm(Y)

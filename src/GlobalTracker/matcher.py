@@ -269,4 +269,3 @@ class Matcher:
                 out_local.remove(out_tracker)
                 
         return cur_local, new_local, out_local
-    

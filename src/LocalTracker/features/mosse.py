@@ -285,4 +285,3 @@ class MosseFilter(Feature):
         self.last_frame = swap
         
         return np.array([ret])        
-        

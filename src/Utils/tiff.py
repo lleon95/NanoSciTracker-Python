@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # NanoSciTracker - 2020
 # Author: Luis G. Leon Vega <luis@luisleon.me>
 #
@@ -20,41 +19,26 @@
 # under the License.
 #
 # This project was sponsored by CNR-IOM
-# Master in High-Performance Computing - SISSA
 
 import cv2 as cv
 import numpy as np
 
-def draw_roi(world, rois):
-    for roi in rois:
-        p1, p2 = roi
-        world = cv.rectangle(world, (p1[0], p2[0]), (p1[1], p2[1]), (128, 128, 128), 2)
-    return world
 
+def tiff12_open(img_path, normalisation=2048):
+    """
+    Tiff 12 image opener
+    img_path: path to the file
+    normalisation: max value within the image
+    """
+    tiff = cv.imread(img_path, -1)
 
-def build_rois(roi_size, overlapping):
-    h, w = roi_size
-    h_p = h - overlapping
-    w_p = w - overlapping
+    if tiff is None:
+        print("No image loaded...")
+        return
 
-    ROIS = [
-        ((0, w), (0, h)),
-        ((w_p, w_p + w), (h_p, h_p + h)),
-        ((0, w), (h_p, h_p + h)),
-        ((w_p, w_p + w), (0, h)),
-    ]
-    return ROIS
-
-
-def naive_stitch(frames, world_size, scene_size, order):
-    # Create the canvas
-    h, w = world_size
-    world = np.zeros((h, w, 3), dtype=np.uint8)
-    h, w = scene_size
-
-    for i in range(len(order)):
-        x = w * (i % 2)
-        y = h * (i // 2)
-        world[y:y+h, x:x+w] = frames[order[i]]
-
-    return world
+    # Compute the image
+    tiff = tiff.astype(np.float)
+    tiff *= 255.0
+    tiff /= normalisation
+    tiff = tiff.astype(np.uint8)
+    return tiff

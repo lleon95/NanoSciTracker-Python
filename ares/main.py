@@ -33,7 +33,7 @@ sys.path.append("../src/LocalTracker")
 
 import GlobalTracker.world as World
 import GlobalTracker.utils as Utils
-import dataset as Dataset
+import mcherry as Dataset
 
 ## --------- Parameters ------------
 SCENE_SIZE = (480, 640)
@@ -93,9 +93,9 @@ if __name__ == "__main__":
   # Handle the arguments
   parser = argparse.ArgumentParser(description='Performs the local tracking')
   parser.add_argument('--dataset', type=str,
-                      help='Choose the dataset', default='./data/ctrl6_72h')
+                      help='Choose the dataset', default='../data/mcherry')
   parser.add_argument('--overlapping', type=int,
-                      help='Overlapping of the scene in pixels', default=20)
+                      help='Overlapping of the scene in pixels', default=0)
   parser.add_argument('--frames', type=int,
                       help='Number of frames', default=450)
   parser.add_argument('--delay_player', type=float,

@@ -52,9 +52,9 @@ def naive_stitch(frames, world_size, scene_size, order):
     world = np.zeros((h, w, 3), dtype=np.uint8)
     h, w = scene_size
 
-    for i in order:
+    for i in range(len(order)):
         x = w * (i % 2)
         y = h * (i // 2)
-        world[y:y+h, x:x+w] = frames[i]
+        world[y:y+h, x:x+w] = frames[order[i]]
 
     return world

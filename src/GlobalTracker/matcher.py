@@ -57,7 +57,7 @@ class Matcher:
         
         # Probability Threshold
         self.threshold = 0.45
-        self.max_death_time = 5000
+        self.max_death_time = 100
         
     def _compare_histogram(self, lhs, rhs):
         '''
@@ -165,6 +165,16 @@ class Matcher:
         distance = np.linalg.norm(X - Y)
         
         return np.array([distance])
+
+    def filter(self, lhs, rhs):
+        '''
+        Cleans the lhs based on the replicates on rhs
+        '''
+        for elem in lhs:
+            if elem in rhs:
+                lhs.remove(elem)
+
+        return lhs
     
     def clean(self, cur_v, new_v, out_v, last_idx, frame_cnt):
         for tracker in out_v:
@@ -173,8 +183,9 @@ class Matcher:
             except:
                 # The scene doesn't delete the out-of-scene immediately
                 continue
-            
+
         for out_ in out_v:
+
             out_.death_time += 1
             if out_.death_time == self.max_death_time:
                 out_v.remove(out_)
@@ -260,16 +271,13 @@ class Matcher:
             
             if max_val >= self.threshold:
                 out_tracker = out_local[max_idx]
-                if out_tracker.label == None:
-                    # Discard in case of not having a label
-                    out_local.remove(out_tracker)
-                else:
+                if not out_tracker.label is None:
                     # Accept
                     new_tracker = new_
                     new_tracker.label = out_tracker.label
                     cur_local.append(new_tracker)
                     # Remove from the lists
                     new_local.remove(new_tracker)
-                    out_local.remove(out_tracker)
+                out_local.remove(out_tracker)
                 
         return cur_local, new_local, out_local

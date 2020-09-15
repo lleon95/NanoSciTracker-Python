@@ -73,6 +73,14 @@ class World:
         self._frame_cnt += 1
         match_instance = GlobalMatcher.Matcher()
 
+        # Perform cleaning of replicates - this avoids redundancies
+        self._current_trackers = match_instance.filter(self._current_trackers, \
+            self._out_trackers)
+        self._new_trackers = match_instance.filter(self._new_trackers, \
+            self._out_trackers)
+        self._new_trackers = match_instance.filter(self._new_trackers, \
+            self._current_trackers)
+
         # Perform matching
         res = match_instance.match(self._current_trackers, self._new_trackers, \
             self._out_trackers)

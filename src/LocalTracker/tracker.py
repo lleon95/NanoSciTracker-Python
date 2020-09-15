@@ -137,9 +137,16 @@ class Tracker:
             self.mosse_valid = self.mosse.initialise(cropped, centred_roi)
          
     def update(self, frame, ROI=None):
+        # Analyse if it went out of scene to kill it from the local source
         ok, bbox = self.tracker.update(frame)
         p1 = (int(bbox[0]), int(bbox[1]))
         p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
+
+        # Verify if the tracker was classified as out of scene. This avoids
+        # redundant copies and avoid refreshing the out of scene trackers
+
+        if self.out_roi:
+            return False
 
         # Analyse the tracker to check if it's alive or not
 
@@ -183,7 +190,7 @@ def updateTrackers(frame, trackers, ROI=None):
         state = trackers[i].update(frame, ROI)
         if not state:
             length -= 1
-            del trackers[i]
+            trackers.remove(trackers[i])
         else:
             i += 1
     return trackers

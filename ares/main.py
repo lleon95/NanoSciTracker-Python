@@ -64,9 +64,9 @@ def main(args):
   # Run the simulation
   for frame_idx in range(n_frames):
     frames = []
-    for i in range(len(rois)):
+    for i in range(len(order)):
       # Refresh scene
-      frames.append(cv.cvtColor(dataset[i][frame_idx], cv.COLOR_GRAY2BGR))
+      frames.append(cv.cvtColor(dataset[order[i]][frame_idx], cv.COLOR_GRAY2BGR))
 
     # Update scenes
     tracking_world.update_trackers(frames)

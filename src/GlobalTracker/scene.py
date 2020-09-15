@@ -55,6 +55,7 @@ class Scene:
         self.new_detections = []
         self.trackers_new_detections = []
         self.trackers_out_scene = []
+        self.death_trackers = []
 
         # Settings
         self.counter = 0
@@ -89,10 +90,11 @@ class Scene:
         self.trackings = self.track(self.frame)
         # Catch trackers which went out of scene
         self.trackers_out_scene = Tracker.retrieveOutScene(self.trackers)
+        self.death_trackers = Tracker.retrieveDeathTrackers(self.trackers)
         self.counter += 1
 
         return (self.trackers, self.trackers_out_scene, \
-            self.trackers_new_detections)
+            self.trackers_new_detections, self.death_trackers)
     
     def draw(self, colour_frame):
         '''

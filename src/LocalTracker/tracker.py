@@ -150,6 +150,10 @@ class Tracker:
 
         # Analyse the tracker to check if it's alive or not
 
+        # If the dead time arrived return false to delete it from the scene
+        if self.timeout == 0:
+            return False
+
         # Verify if the tracker has died
         if ok:
             self.roi = (p1, p2)
@@ -157,10 +161,6 @@ class Tracker:
             self.is_death = True
             self.timeout -= 1
             return True
-        
-        # If the dead time arrived return false to delete it from the scene
-        if self.timeout == 0:
-            return False
 
         # In case of an alive tracker
 
@@ -196,7 +196,7 @@ def updateTrackers(frame, trackers, ROI=None):
     return trackers
 
 def deployTrackers(colour, bb_list, trackers, ROI=None, offset=None, grayscale=True):
-    newly_deployed = []
+    newly_deployed = list([])
     for i in bb_list:
         tracker = Tracker((0,255,0), offset=offset, grayscale=grayscale)
         do_add = tracker.init(colour, i, scene_roi=ROI)
@@ -212,9 +212,15 @@ def retrieveBBs(trackers):
     return bounding_boxes
 
 def retrieveOutScene(trackers):
-    trackers_ = []
+    trackers_ = list([])
     for tracker in trackers:
         if tracker.out_roi:
             trackers_.append(tracker)
     return trackers_
-    
+
+def retrieveDeathTrackers(trackers):
+    trackers_ = list([])
+    for tracker in trackers:
+        if tracker.is_death:
+            trackers_.append(tracker)
+    return trackers_

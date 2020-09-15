@@ -51,7 +51,6 @@ class Scene:
         # BBs
         self.trackers = []
         self.detections = []
-        self.trackings = []
         self.new_detections = []
         self.trackers_new_detections = []
         self.trackers_out_scene = []
@@ -81,13 +80,13 @@ class Scene:
         if self.counter % self.detection_sampling == 0:
             self.detections = self.detect(gray_detect)
             self.new_detections = Matcher.inter_match(self.detections, \
-                self.trackings)
+                self.trackers)
             # Deploy new trackers accordingly
             self.trackers_new_detections = Tracker.deployTrackers(self.frame, \
                 self.new_detections, self.trackers, ROI=self.detection_roi,
                 offset=(self.x0, self.y0), grayscale=False)
         # Perform tracking update
-        self.trackings = self.track(self.frame)
+        self.track(self.frame)
         # Catch trackers which went out of scene
         self.trackers_out_scene = Tracker.retrieveOutScene(self.trackers)
         self.death_trackers = Tracker.retrieveDeathTrackers(self.trackers)

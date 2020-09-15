@@ -64,13 +64,13 @@ def main(args):
     # Detection - Refresh tracking
     if counter % args.sample_detection:
       detection_bbs = detector.detect(gray_detect, ROI=detection_roi)
-      new_detections = matcher.inter_match(detection_bbs, tracking_bbs)
+      new_detections = matcher.inter_match(detection_bbs, trackers)
       tracker.deployTrackers(frame, new_detections, trackers)
     
     '''
     if counter == 10:
       detection_bbs = detector.detect(gray_detect, ROI=detection_roi)
-      new_detections = matcher.inter_match(detection_bbs, tracking_bbs)
+      new_detections = matcher.inter_match(detection_bbs, trackers)
       tracker.deployTrackers(frame, [new_detections[0], new_detections[1]], trackers)
     '''
 

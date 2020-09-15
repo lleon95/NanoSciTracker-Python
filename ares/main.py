@@ -95,7 +95,7 @@ if __name__ == "__main__":
   parser.add_argument('--dataset', type=str,
                       help='Choose the dataset', default='../data/mcherry')
   parser.add_argument('--overlapping', type=int,
-                      help='Overlapping of the scene in pixels', default=0)
+                      help='Overlapping of the scene in pixels', default=10)
   parser.add_argument('--frames', type=int,
                       help='Number of frames', default=450)
   parser.add_argument('--delay_player', type=float,

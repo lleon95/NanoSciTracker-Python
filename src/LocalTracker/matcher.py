@@ -118,6 +118,7 @@ def inter_match(detection_bbs, trackers, threshold={"iom": 0.25, "cd":64}):
             if cd < threshold["cd"]:
                 overlap = True
 
+            # If it's overlapping and it's not death nothing to do
             if overlap:
                 break
 

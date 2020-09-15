@@ -30,6 +30,7 @@ import time
 sys.path.append("../src")
 sys.path.append("../src/GlobalTracker")
 sys.path.append("../src/LocalTracker")
+sys.path.append("../src/Matcher")
 
 import GlobalTracker.world as World
 import GlobalTracker.utils as Utils

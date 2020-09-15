@@ -23,7 +23,7 @@
 import copy
 
 import scene as Scene
-import matcher as GlobalMatcher
+import Matcher.matcher as GlobalMatcher
 import LocalTracker.drawutils as DrawUtils
 
 

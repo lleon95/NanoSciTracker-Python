@@ -108,6 +108,10 @@ def inter_match(detection_bbs, trackers, threshold={"iom": 0.25, "cd":64}):
         overlap = False
 
         for tracker in trackers:
+            # Skip if the tracker is death
+            if tracker.is_death:
+                continue
+
             # Look if there is an intersection
             iou = calculate_iom(detection, tracker.roi)
             if iou > threshold["iom"]:

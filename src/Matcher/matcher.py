@@ -38,23 +38,23 @@ import copy
 import numpy as np
 
 class Matcher:
-    def __init__(self):
+    def __init__(self, weights={"position": -0.3, "velocity": -0.2, "angle": 0.2, "histogram": 0.4}):
         # Features to analyse
-        self.ce_position = True
-        self.ce_velocity = True
-        self.ce_angle = True
-        self.ce_hog = False
-        self.ce_histogram = True
-        self.ce_mosse = False # FIXME
+        self.ce_position = weights.get("position", 0.) != 0.
+        self.ce_velocity = weights.get("velocity", 0.) != 0.
+        self.ce_angle = weights.get("angle", 0.) != 0.
+        self.ce_hog = weights.get("hog", 0.) != 0.
+        self.ce_histogram = weights.get("histogram", 0.) != 0.
+        self.ce_mosse = weights.get("mosse", 0.) != 0.
         
         # Weights
-        self.w_position = -0.3
-        self.w_velocity = -0.2
-        self.w_angle = 0.2
-        self.w_hog = 0.
-        self.w_histogram = 0.4
-        self.w_mosse = 0.
-        
+        self.w_position = weights.get("position", 0.)
+        self.w_velocity = weights.get("velocity", 0.)
+        self.w_angle = weights.get("angle", 0.)
+        self.w_hog = weights.get("hog", 0.)
+        self.w_histogram = weights.get("histogram", 0.)
+        self.w_mosse = weights.get("mosse", 0.)
+
         # Probability Threshold
         self.threshold = 0.45
         self.max_death_time = 100

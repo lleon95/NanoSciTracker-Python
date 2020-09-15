@@ -38,7 +38,7 @@ import copy
 import numpy as np
 
 class Matcher:
-    def __init__(self, weights={"position": -0.3, "velocity": -0.2, "angle": 0.2, "histogram": 0.4}):
+    def __init__(self, weights={"position": -0.3, "velocity": -0.2, "angle": 0.2, "histogram": 0.4}, th=0.45):
         # Features to analyse
         self.ce_position = weights.get("position", 0.) != 0.
         self.ce_velocity = weights.get("velocity", 0.) != 0.
@@ -56,7 +56,7 @@ class Matcher:
         self.w_mosse = weights.get("mosse", 0.)
 
         # Probability Threshold
-        self.threshold = 0.45
+        self.threshold = th
         self.max_death_time = 100
         
     def _compare_histogram(self, lhs, rhs):

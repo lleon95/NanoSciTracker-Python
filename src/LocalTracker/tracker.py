@@ -68,6 +68,7 @@ class Tracker:
         self.mosse_valid = False
         self.stable = True
         self.out_roi = False
+        self.is_death = False
         self.death_time = 0
         self.samples = 0
 
@@ -140,8 +141,21 @@ class Tracker:
         p1 = (int(bbox[0]), int(bbox[1]))
         p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
 
+        # Analyse the tracker to check if it's alive or not
+
+        # Verify if the tracker has died
         if ok:
             self.roi = (p1, p2)
+        else:
+            self.is_death = True
+            self.timeout -= 1
+            return True
+        
+        # If the dead time arrived return false to delete it from the scene
+        if self.timeout == 0:
+            return False
+
+        # In case of an alive tracker
 
         # Crop and grayscale
         gray_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
@@ -158,11 +172,6 @@ class Tracker:
             self._update_hog(gray)
             self._update_mosse(gray_frame)
             self.out_roi = False
-
-        if self.timeout == 0:
-            return False
-        if not ok or self.out_roi:
-            self.timeout -= 1
 
         return True
     

@@ -108,8 +108,8 @@ def inter_match(detection_bbs, trackers, threshold={"iom": 0.25, "cd":64}):
         overlap = False
 
         for tracker in trackers:
-            # Skip if the tracker is death
-            if tracker.is_death:
+            # Skip if the tracker is dead
+            if tracker.is_dead:
                 continue
 
             # Look if there is an intersection
@@ -122,7 +122,7 @@ def inter_match(detection_bbs, trackers, threshold={"iom": 0.25, "cd":64}):
             if cd < threshold["cd"]:
                 overlap = True
 
-            # If it's overlapping and it's not death nothing to do
+            # If it's overlapping and it's not dead nothing to do
             if overlap:
                 break
 

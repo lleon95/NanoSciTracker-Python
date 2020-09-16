@@ -68,8 +68,8 @@ class Tracker:
         self.mosse_valid = False
         self.stable = True
         self.out_roi = False
-        self.is_death = False
-        self.death_time = 0
+        self.is_dead = False
+        self.dead_time = 0
         self.samples = 0
 
     def _validate_roi(self, ROI):
@@ -158,7 +158,7 @@ class Tracker:
         if ok:
             self.roi = (p1, p2)
         else:
-            self.is_death = True
+            self.is_dead = True
             self.timeout -= 1
             return True
 
@@ -218,9 +218,9 @@ def retrieveOutScene(trackers):
             trackers_.append(tracker)
     return trackers_
 
-def retrieveDeathTrackers(trackers):
+def retrieveDeadTrackers(trackers):
     trackers_ = list([])
     for tracker in trackers:
-        if tracker.is_death:
+        if tracker.is_dead:
             trackers_.append(tracker)
     return trackers_

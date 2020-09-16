@@ -33,7 +33,7 @@ class World:
         self._new_trackers = []
         self._current_trackers = []
         self._out_trackers = []
-        self._death_trackers = []
+        self._dead_trackers = []
         self._last_id = 0
         self._frame_cnt = 0
 
@@ -73,7 +73,7 @@ class World:
 
         # Perform matching
         return match_instance.match(
-            self._current_trackers, self._new_trackers, self._death_trackers
+            self._current_trackers, self._new_trackers, self._dead_trackers
         )
 
     def _update_current_trackers(self):
@@ -89,17 +89,17 @@ class World:
             self._current_trackers,
             self._new_trackers,
             self._out_trackers,
-            self._death_trackers,
+            self._dead_trackers,
         ) = match_instance.pre_clean(
             self._current_trackers,
             self._new_trackers,
             self._out_trackers,
-            self._death_trackers,
+            self._dead_trackers,
         )
 
-        # Link death trackers first
+        # Link dead trackers first
         res = self._find_dead_trackers()
-        self._current_trackers, self._new_trackers, self._death_trackers = res
+        self._current_trackers, self._new_trackers, self._dead_trackers = res
 
         # Perform matching - out of scene
         res = match_instance.match(
@@ -132,10 +132,10 @@ class World:
             self.load_frames(frames)
 
         for scene in self._scenes:
-            cur, out, new, death = scene.update()
+            cur, out, new, dead = scene.update()
             self._new_trackers += new
             self._out_trackers += out
-            self._death_trackers = death
+            self._dead_trackers = dead
 
         self._update_current_trackers()
 
@@ -174,7 +174,7 @@ class World:
         frame = DrawUtils.draw_trackers(frame, self._current_trackers, (255, 255, 255))
         frame = DrawUtils.draw_trackers(frame, self._new_trackers, (255, 0, 0))
         frame = DrawUtils.draw_trackers(frame, self._out_trackers, (0, 0, 255))
-        frame = DrawUtils.draw_trackers(frame, self._death_trackers, (255, 0, 255))
+        frame = DrawUtils.draw_trackers(frame, self._dead_trackers, (255, 0, 255))
         frame = DrawUtils.place_text(
             frame, "Cur: " + str(len(self._current_trackers)), (0, 30)
         )

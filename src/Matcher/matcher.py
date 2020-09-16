@@ -57,7 +57,7 @@ class Matcher:
 
         # Probability Threshold
         self.threshold = th
-        self.max_death_time = 100
+        self.max_dead_time = 100
         
     def _compare_histogram(self, lhs, rhs):
         '''
@@ -176,12 +176,12 @@ class Matcher:
 
         return lhs
     
-    def pre_clean(self, cur_v, new_v, out_v, death_v):
+    def pre_clean(self, cur_v, new_v, out_v, dead_v):
         cur_v = self.filter(cur_v, out_v)
         new_v = self.filter(new_v, out_v)
         new_v = self.filter(new_v, cur_v)
-        cur_v = self.filter(cur_v, death_v)
-        return cur_v, new_v, out_v, death_v
+        cur_v = self.filter(cur_v, dead_v)
+        return cur_v, new_v, out_v, dead_v
 
     def post_clean(self, cur_v, new_v, out_v, last_idx, frame_cnt):
         for tracker in out_v:
@@ -193,8 +193,8 @@ class Matcher:
 
         for out_ in out_v:
 
-            out_.death_time += 1
-            if out_.death_time == self.max_death_time:
+            out_.dead_time += 1
+            if out_.dead_time == self.max_dead_time:
                 out_v.remove(out_)
         
         new_to_continue = []

@@ -72,9 +72,9 @@ class World:
         match_instance = GlobalMatcher.Matcher(weights, threshold)
 
         # Perform matching
-        return match_instance.match(self._current_trackers, self._new_trackers, \
-            self._death_trackers)
-        
+        return match_instance.match(
+            self._current_trackers, self._new_trackers, self._death_trackers
+        )
 
     def _update_current_trackers(self):
         """
@@ -85,29 +85,41 @@ class World:
         match_instance = GlobalMatcher.Matcher()
 
         # Perform cleaning of replicates - this avoids redundancies
-        self._current_trackers = match_instance.filter(self._current_trackers, \
-            self._out_trackers)
-        self._new_trackers = match_instance.filter(self._new_trackers, \
-            self._out_trackers)
-        self._new_trackers = match_instance.filter(self._new_trackers, \
-            self._current_trackers)
-        self._current_trackers = match_instance.filter(self._current_trackers, \
-            self._death_trackers)
+        (
+            self._current_trackers,
+            self._new_trackers,
+            self._out_trackers,
+            self._death_trackers,
+        ) = match_instance.pre_clean(
+            self._current_trackers,
+            self._new_trackers,
+            self._out_trackers,
+            self._death_trackers,
+        )
 
         # Link death trackers first
         res = self._find_dead_trackers()
         self._current_trackers, self._new_trackers, self._death_trackers = res
 
         # Perform matching - out of scene
-        res = match_instance.match(self._current_trackers, self._new_trackers, \
-            self._out_trackers)
+        res = match_instance.match(
+            self._current_trackers, self._new_trackers, self._out_trackers
+        )
         self._current_trackers, self._new_trackers, self._out_trackers = res
-        
-        # Perform cleaning
-        self._last_id, self._current_trackers, \
-            self._new_trackers, self._out_trackers = match_instance.clean(self._current_trackers, \
-            self._new_trackers, self._out_trackers, self._last_id, \
-            self._frame_cnt)
+
+        # Perform post cleaning
+        (
+            self._last_id,
+            self._current_trackers,
+            self._new_trackers,
+            self._out_trackers,
+        ) = match_instance.post_clean(
+            self._current_trackers,
+            self._new_trackers,
+            self._out_trackers,
+            self._last_id,
+            self._frame_cnt,
+        )
 
     def update_trackers(self, frames=None):
         """
@@ -163,5 +175,7 @@ class World:
         frame = DrawUtils.draw_trackers(frame, self._new_trackers, (255, 0, 0))
         frame = DrawUtils.draw_trackers(frame, self._out_trackers, (0, 0, 255))
         frame = DrawUtils.draw_trackers(frame, self._death_trackers, (255, 0, 255))
-        frame = DrawUtils.place_text(frame, "Cur: "+ str(len(self._current_trackers)), (0,30))
+        frame = DrawUtils.place_text(
+            frame, "Cur: " + str(len(self._current_trackers)), (0, 30)
+        )
         return frame

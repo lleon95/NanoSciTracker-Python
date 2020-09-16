@@ -176,7 +176,14 @@ class Matcher:
 
         return lhs
     
-    def clean(self, cur_v, new_v, out_v, last_idx, frame_cnt):
+    def pre_clean(self, cur_v, new_v, out_v, death_v):
+        cur_v = self.filter(cur_v, out_v)
+        new_v = self.filter(new_v, out_v)
+        new_v = self.filter(new_v, cur_v)
+        cur_v = self.filter(cur_v, death_v)
+        return cur_v, new_v, out_v, death_v
+
+    def post_clean(self, cur_v, new_v, out_v, last_idx, frame_cnt):
         for tracker in out_v:
             try:
                 cur_v.remove(tracker)

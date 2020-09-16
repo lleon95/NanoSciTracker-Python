@@ -30,6 +30,7 @@ import time
 sys.path.append("../")
 sys.path.append("../LocalTracker/")
 sys.path.append("../GlobalTracker/")
+sys.path.append("../Matcher/")
 
 import Playground.generator as Generator
 import GlobalTracker.world as World

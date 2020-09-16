@@ -65,7 +65,13 @@ class Histogram(Feature):
         # Applying Bhattacharyya to it
         X = self.predict().flatten()
         Y = histo2.predict().flatten()
+        sumX = np.sum(X)
+        sumY = np.sum(Y)
+        
         # Normalise to 1
+        if sumX == 0. or sumY == 0.:
+            return np.array([0.])
+        
         X /= np.sum(X)
         Y /= np.sum(Y)
         # Compute the Bhattacharyya

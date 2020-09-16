@@ -39,9 +39,9 @@ def build_rois(roi_size, overlapping):
 
     ROIS = [
         ((0, w), (0, h)),
-        ((w_p, w_p + w), (h_p, h_p + h)),
-        ((0, w), (h_p, h_p + h)),
         ((w_p, w_p + w), (0, h)),
+        ((0, w), (h_p, h_p + h)),
+        ((w_p, w_p + w), (h_p, h_p + h)),
     ]
     return ROIS
 

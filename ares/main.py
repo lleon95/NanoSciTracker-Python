@@ -30,6 +30,7 @@ import time
 sys.path.append("../src")
 sys.path.append("../src/GlobalTracker")
 sys.path.append("../src/LocalTracker")
+sys.path.append("../src/Matcher")
 
 import GlobalTracker.world as World
 import GlobalTracker.utils as Utils
@@ -64,9 +65,9 @@ def main(args):
   # Run the simulation
   for frame_idx in range(n_frames):
     frames = []
-    for i in range(len(rois)):
+    for i in range(len(order)):
       # Refresh scene
-      frames.append(cv.cvtColor(dataset[i][frame_idx], cv.COLOR_GRAY2BGR))
+      frames.append(cv.cvtColor(dataset[order[i]][frame_idx], cv.COLOR_GRAY2BGR))
 
     # Update scenes
     tracking_world.update_trackers(frames)
@@ -95,7 +96,7 @@ if __name__ == "__main__":
   parser.add_argument('--dataset', type=str,
                       help='Choose the dataset', default='../data/mcherry')
   parser.add_argument('--overlapping', type=int,
-                      help='Overlapping of the scene in pixels', default=0)
+                      help='Overlapping of the scene in pixels', default=10)
   parser.add_argument('--frames', type=int,
                       help='Number of frames', default=450)
   parser.add_argument('--delay_player', type=float,

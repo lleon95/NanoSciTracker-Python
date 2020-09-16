@@ -40,7 +40,7 @@ def computeTrackerRoi(roi):
     return (x1, y1, x2 - x1, y2 - y1)
 
 class Tracker:
-    def __init__(self, colour, grayscale=True, timeout=15, offset=None):
+    def __init__(self, colour, grayscale=True, timeout=50, offset=None):
         self.tracker = cv.TrackerKCF_create()
         self.colour = colour
         self.roi = None
@@ -68,7 +68,8 @@ class Tracker:
         self.mosse_valid = False
         self.stable = True
         self.out_roi = False
-        self.death_time = 0
+        self.is_dead = False
+        self.dead_time = 0
         self.samples = 0
 
     def _validate_roi(self, ROI):
@@ -136,12 +137,35 @@ class Tracker:
             self.mosse_valid = self.mosse.initialise(cropped, centred_roi)
          
     def update(self, frame, ROI=None):
+        # Analyse if it went out of scene to kill it from the local source
         ok, bbox = self.tracker.update(frame)
         p1 = (int(bbox[0]), int(bbox[1]))
         p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
 
+        # Verify if the tracker was classified as out of scene. This avoids
+        # redundant copies and avoid refreshing the out of scene trackers
+
+        if self.out_roi:
+            return False
+
+        # Analyse the tracker to check if it's alive or not
+
+        # If the dead time arrived return false to delete it from the scene
+        if self.timeout == 0:
+            return False
+
+        # If it's dead increase the counter
+        if self.is_dead:
+            self.timeout -= 1
+
+        # Verify if the tracker has died
         if ok:
             self.roi = (p1, p2)
+        else:
+            self.is_dead = True
+            return True
+
+        # In case of an alive tracker
 
         # Crop and grayscale
         gray_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
@@ -159,11 +183,6 @@ class Tracker:
             self._update_mosse(gray_frame)
             self.out_roi = False
 
-        if self.timeout == 0:
-            return False
-        if not ok or self.out_roi:
-            self.timeout -= 1
-
         return True
     
 def updateTrackers(frame, trackers, ROI=None):
@@ -174,13 +193,13 @@ def updateTrackers(frame, trackers, ROI=None):
         state = trackers[i].update(frame, ROI)
         if not state:
             length -= 1
-            del trackers[i]
+            trackers.remove(trackers[i])
         else:
             i += 1
     return trackers
 
 def deployTrackers(colour, bb_list, trackers, ROI=None, offset=None, grayscale=True):
-    newly_deployed = []
+    newly_deployed = list([])
     for i in bb_list:
         tracker = Tracker((0,255,0), offset=offset, grayscale=grayscale)
         do_add = tracker.init(colour, i, scene_roi=ROI)
@@ -196,9 +215,15 @@ def retrieveBBs(trackers):
     return bounding_boxes
 
 def retrieveOutScene(trackers):
-    trackers_ = []
+    trackers_ = list([])
     for tracker in trackers:
         if tracker.out_roi:
             trackers_.append(tracker)
     return trackers_
-    
+
+def retrieveDeadTrackers(trackers):
+    trackers_ = list([])
+    for tracker in trackers:
+        if tracker.is_dead:
+            trackers_.append(tracker)
+    return trackers_

@@ -26,7 +26,8 @@ import cv2 as cv
 import LocalTracker.detector as Detector
 import LocalTracker.drawutils as DrawUtils
 import LocalTracker.tracker as Tracker
-import LocalTracker.matcher as Matcher
+import LocalTracker.matcher as DetectionMatcher
+import Matcher.matcher as FeatureMatcher
 
 class Scene:
     def __init__(self, ROI=None, overlap=0, detection_sampling=3, detection_roi=None):
@@ -51,10 +52,10 @@ class Scene:
         # BBs
         self.trackers = []
         self.detections = []
-        self.trackings = []
         self.new_detections = []
         self.trackers_new_detections = []
         self.trackers_out_scene = []
+        self.dead_trackers = []
 
         # Settings
         self.counter = 0
@@ -79,20 +80,24 @@ class Scene:
         # Perform detections and filter the new ones
         if self.counter % self.detection_sampling == 0:
             self.detections = self.detect(gray_detect)
-            self.new_detections = Matcher.inter_match(self.detections, \
-                self.trackings)
+            self.new_detections = DetectionMatcher.inter_match(self.detections, \
+                self.trackers)
             # Deploy new trackers accordingly
             self.trackers_new_detections = Tracker.deployTrackers(self.frame, \
                 self.new_detections, self.trackers, ROI=self.detection_roi,
                 offset=(self.x0, self.y0), grayscale=False)
+        else:
+            self.new_detections = []
+            self.trackers_new_detections = []
         # Perform tracking update
-        self.trackings = self.track(self.frame)
+        self.track(self.frame)
         # Catch trackers which went out of scene
         self.trackers_out_scene = Tracker.retrieveOutScene(self.trackers)
+        self.dead_trackers = Tracker.retrieveDeadTrackers(self.trackers)
         self.counter += 1
 
         return (self.trackers, self.trackers_out_scene, \
-            self.trackers_new_detections)
+            self.trackers_new_detections, self.dead_trackers)
     
     def draw(self, colour_frame):
         '''

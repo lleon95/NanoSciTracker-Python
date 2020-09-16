@@ -88,7 +88,7 @@ def calculate_iom(b1, b2):
     return iom
 
 
-def inter_match(detection_bbs, tracking_bbs, threshold={"iom": 0.25, "cd":64}):
+def inter_match(detection_bbs, trackers, threshold={"iom": 0.25, "cd":64}):
     '''
     Matches the bounding boxes
 
@@ -107,17 +107,22 @@ def inter_match(detection_bbs, tracking_bbs, threshold={"iom": 0.25, "cd":64}):
         a1 = compute_area(detection)
         overlap = False
 
-        for tracker in tracking_bbs:
+        for tracker in trackers:
+            # Skip if the tracker is dead
+            if tracker.is_dead:
+                continue
+
             # Look if there is an intersection
-            iou = calculate_iom(detection, tracker)
+            iou = calculate_iom(detection, tracker.roi)
             if iou > threshold["iom"]:
                 overlap = True
 
             # Look if the new detection is close to a tracker
-            cd = calculate_cd(detection, tracker)
+            cd = calculate_cd(detection, tracker.roi)
             if cd < threshold["cd"]:
                 overlap = True
 
+            # If it's overlapping and it's not dead nothing to do
             if overlap:
                 break
 

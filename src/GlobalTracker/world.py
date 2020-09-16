@@ -131,11 +131,12 @@ class World:
         if not frames is None:
             self.load_frames(frames)
 
+        dead_v = list([])
         for scene in self._scenes:
             cur, out, new, dead = scene.update()
             self._new_trackers += new
             self._out_trackers += out
-            self._dead_trackers = dead
+            self._dead_trackers += dead
 
         self._update_current_trackers()
 

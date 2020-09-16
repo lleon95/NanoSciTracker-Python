@@ -192,7 +192,6 @@ class Matcher:
                 continue
 
         for out_ in out_v:
-
             out_.dead_time += 1
             if out_.dead_time == self.max_dead_time:
                 out_v.remove(out_)
@@ -222,7 +221,7 @@ class Matcher:
             if not new_ in cur_v:
                 cur_v.append(new_)
                 
-        new_v = []
+        new_v = list([])
         return last_idx, cur_v, new_to_continue, out_v
     
     def match(self, cur_v, new_v, out_v):

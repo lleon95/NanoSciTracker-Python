@@ -154,12 +154,15 @@ class Tracker:
         if self.timeout == 0:
             return False
 
+        # If it's dead increase the counter
+        if self.is_dead:
+            self.timeout -= 1
+
         # Verify if the tracker has died
         if ok:
             self.roi = (p1, p2)
         else:
             self.is_dead = True
-            self.timeout -= 1
             return True
 
         # In case of an alive tracker

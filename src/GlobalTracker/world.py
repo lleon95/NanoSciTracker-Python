@@ -74,8 +74,8 @@ class World:
         '''
 
         #TODO: Make this parametric
-        weights = {"position": -0.4, "velocity": -0.3, "angle": 0.2, "histogram": 0.4}
-        threshold = 0.35
+        weights = {"position": -3, "histogram": 0.4, "mosse": -0.1, "hog": 0.2}
+        threshold = 0.45
         match_instance = GlobalMatcher.Matcher(weights, threshold)
 
         # Perform matching
@@ -138,7 +138,7 @@ class World:
         if not frames is None:
             self.load_frames(frames)
 
-        dead_v = list([])
+        self._dead_trackers = list([])
         for scene in self._scenes:
             cur, out, new, dead = scene.update()
             self._new_trackers += new

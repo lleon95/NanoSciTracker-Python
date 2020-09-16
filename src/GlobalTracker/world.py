@@ -66,6 +66,16 @@ class World:
         for i in range(len(self._scenes)):
             self._scenes[i].load_frame(frames[i])
 
+    def _find_dead_trackers(self):
+        weights = {"position": -0.4, "velocity": -0.3, "angle": 0.2, "histogram": 0.4}
+        threshold = 0.35
+        match_instance = GlobalMatcher.Matcher(weights, threshold)
+
+        # Perform matching
+        return match_instance.match(self._current_trackers, self._new_trackers, \
+            self._death_trackers)
+        
+
     def _update_current_trackers(self):
         """
         Updates the current trackers list, removing those trackers which
@@ -81,8 +91,14 @@ class World:
             self._out_trackers)
         self._new_trackers = match_instance.filter(self._new_trackers, \
             self._current_trackers)
+        self._current_trackers = match_instance.filter(self._current_trackers, \
+            self._death_trackers)
 
-        # Perform matching
+        # Link death trackers first
+        res = self._find_dead_trackers()
+        self._current_trackers, self._new_trackers, self._death_trackers = res
+
+        # Perform matching - out of scene
         res = match_instance.match(self._current_trackers, self._new_trackers, \
             self._out_trackers)
         self._current_trackers, self._new_trackers, self._out_trackers = res

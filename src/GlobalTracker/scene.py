@@ -72,22 +72,7 @@ class Scene:
             ROI=self.detection_roi)
         return Tracker.retrieveBBs(self.trackers)
 
-    def find_dead_trackers(self):
-        weights = {"position": -0.4, "velocity": -0.3, "angle": 0.2, "histogram": 0.4}
-        threshold = 0.45
-        match_instance = FeatureMatcher.Matcher(weights, threshold)
 
-        # Filter out news and deaths from current
-        cur_v = []
-        for tracker in self.trackers:
-            if not (tracker in self.trackers_new_detections or tracker in \
-                self.death_trackers):
-                cur_v.append(tracker)
-
-        # Perform matching
-        res = match_instance.match(cur_v, self.trackers_new_detections, \
-            self.death_trackers)
-        cur_local, self.trackers_new_detections, self.death_trackers = res
 
 
     def update(self, colour_frame=None):
@@ -113,9 +98,6 @@ class Scene:
         self.trackers_out_scene = Tracker.retrieveOutScene(self.trackers)
         self.death_trackers = Tracker.retrieveDeathTrackers(self.trackers)
         self.counter += 1
-
-        # Find death trackers
-        self.find_dead_trackers()
 
         return (self.trackers, self.trackers_out_scene, \
             self.trackers_new_detections, self.death_trackers)

@@ -85,7 +85,7 @@ class Scene:
             # Deploy new trackers accordingly
             self.trackers_new_detections = Tracker.deployTrackers(self.frame, \
                 self.new_detections, self.trackers, ROI=self.detection_roi,
-                offset=(self.x0, self.y0), grayscale=False)
+                offset=(self.x0, self.y0), grayscale=True)
         else:
             self.new_detections = []
             self.trackers_new_detections = []

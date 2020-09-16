@@ -41,7 +41,7 @@ import numpy as np
 class Matcher:
     def __init__(
         self,
-        weights={"position": -0.3, "velocity": -0.2, "angle": 0.2, "histogram": 0.4},
+        weights={"position": -0.5, "velocity": -0.2, "angle": 0.1, "histogram": 0.3, "mosse": -0.5},
         th=0.45,
         max_dead_time=100,
     ):

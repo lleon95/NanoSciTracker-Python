@@ -91,7 +91,7 @@ class Velocity(Feature):
         feature_comparison = np.zeros((3,))
         # Compare speed
         if self.compare_speed:
-            normaliser = np.linalg.norm([1200,1400])
+            normaliser = np.linalg.norm([960,1280])
             x_v = [self.speed[0].speed, self.speed[1].speed]
             y_v = [velocity2.speed[0].speed, velocity2.speed[1].speed]
             x_v /= normaliser

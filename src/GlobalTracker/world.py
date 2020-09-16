@@ -67,6 +67,13 @@ class World:
             self._scenes[i].load_frame(frames[i])
 
     def _find_dead_trackers(self):
+        '''
+        This routine executes the matcher in order to look for dead trackers 
+        in the world and link them in a similar fashion to the out-of-scene
+        This perform operations on: current, new, and dead trackers
+        '''
+
+        #TODO: Make this parametric
         weights = {"position": -0.4, "velocity": -0.3, "angle": 0.2, "histogram": 0.4}
         threshold = 0.35
         match_instance = GlobalMatcher.Matcher(weights, threshold)

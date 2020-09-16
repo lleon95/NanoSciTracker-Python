@@ -271,6 +271,7 @@ class Matcher:
             
             if max_val >= self.threshold:
                 out_tracker = out_local[max_idx]
+                out_tracker.timeout = 0
                 if not out_tracker.label is None:
                     # Accept
                     new_tracker = new_

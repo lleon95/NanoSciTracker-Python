@@ -40,7 +40,7 @@ def computeTrackerRoi(roi):
     return (x1, y1, x2 - x1, y2 - y1)
 
 class Tracker:
-    def __init__(self, colour, grayscale=True, timeout=30, offset=None):
+    def __init__(self, colour, grayscale=True, timeout=50, offset=None):
         self.tracker = cv.TrackerKCF_create()
         self.colour = colour
         self.roi = None

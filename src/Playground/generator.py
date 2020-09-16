@@ -69,9 +69,9 @@ class Cell:
     '''
     Instance which will populate the world
     '''
-    def __init__(self, colour, speed_limits=(1,5), \
+    def __init__(self, colour, speed_limits=(1,3), \
       boundary_limits=((100,1400-100), (100,1200-100)), \
-      size_limits=(15,35), lr=0.05):
+      size_limits=(10,20), lr=0.05):
         # Set the limits
         self.min_x = boundary_limits[0][0]
         self.max_x = boundary_limits[0][1]

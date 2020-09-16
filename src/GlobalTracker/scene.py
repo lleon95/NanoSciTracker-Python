@@ -72,9 +72,6 @@ class Scene:
             ROI=self.detection_roi)
         return Tracker.retrieveBBs(self.trackers)
 
-
-
-
     def update(self, colour_frame=None):
         if not colour_frame is None:
             self.frame = colour_frame

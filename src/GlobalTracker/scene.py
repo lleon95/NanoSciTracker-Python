@@ -30,7 +30,7 @@ import LocalTracker.matcher as DetectionMatcher
 import Matcher.matcher as FeatureMatcher
 
 class Scene:
-    def __init__(self, ROI=None, overlap=0, detection_sampling=3, detection_roi=None):
+    def __init__(self, ROI=None, overlap=0, detection_sampling=3, detection_roi=None, batches=2):
         # Get coordinates
         self.roi = ROI
         x, y = self.roi
@@ -58,6 +58,7 @@ class Scene:
         self.dead_trackers = []
 
         # Settings
+        self.batches = batches
         self.counter = 0
         self.detection_sampling = detection_sampling
 
@@ -65,7 +66,7 @@ class Scene:
         self.frame = frame
 
     def detect(self, gray_frame):
-        return Detector.detect(gray_frame)
+        return Detector.detect(gray_frame, self.batches)
 
     def track(self, colour_frame):
         Tracker.updateTrackers(colour_frame, self.trackers, \

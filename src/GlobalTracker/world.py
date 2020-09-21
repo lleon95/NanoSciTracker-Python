@@ -36,6 +36,7 @@ class World:
         self._dead_trackers = []
         self._last_id = 0
         self._frame_cnt = 0
+        self._batches = 4
 
     def spawn_scenes(self, rois, overlapping=0, sampling_rate=3):
         """
@@ -52,7 +53,8 @@ class World:
         for roi in rois:
             self._scenes.append(
                 Scene.Scene(
-                    ROI=roi, overlap=overlapping, detection_sampling=sampling_rate
+                    ROI=roi, overlap=overlapping, detection_sampling=sampling_rate, 
+                    batches=self._batches
                 )
             )
 

@@ -109,7 +109,7 @@ def inter_match(detection_bbs, trackers, threshold={"iom": 0.25, "cd":64}):
 
         for tracker in trackers:
             # Skip if the tracker is dead
-            if tracker.is_dead:
+            if tracker.is_dead or tracker.out_roi:
                 continue
 
             # Look if there is an intersection

@@ -89,7 +89,10 @@ class World:
         requires to be analysed for matching
         """
         self._frame_cnt += 1
-        match_instance = GlobalMatcher.Matcher()
+        weights = {"position": -3, "histogram": 0.4, "mosse": -0.1, "hog": 0.2}
+        threshold = 0.45
+        death_time = 200
+        match_instance = GlobalMatcher.Matcher(weights, threshold, death_time)
 
         # Perform cleaning of replicates - this avoids redundancies
         (

@@ -83,8 +83,8 @@ def compute_k(size):
     if h <= 170 and w <= 230:
         return 3
     
-    k1_1 = h * 17 / 960
-    k1_2 = w * 17 / 1280
+    k1_1 = h * 17 / 1920
+    k1_2 = w * 17 / 2560
     
     k1 = int((k1_1 + k1_2) / 2)
     
@@ -121,8 +121,8 @@ def compute_padding(size):
     h = size[0]
     w = size[1]
     
-    p1_1 = h * 48 / 960
-    p1_2 = w * 48 / 1280
+    p1_1 = h * 32 / 960
+    p1_2 = w * 32 / 1280
     
     p1 = int((p1_1 + p1_2) / 2)
     
@@ -139,7 +139,7 @@ def label_boxes(markers, size=None):
 
     padding = compute_padding(size)
     # FIXME: Pay attention on the max size
-    bb_list = get_bbs(labels, padding, padding, padding * 4)
+    bb_list = get_bbs(labels, padding, padding / 2, padding * 4)
     
     return bb_list
 

@@ -27,6 +27,20 @@ import sys
 
 sys.path.append("../src/")
 
+SCENE_SIZE = (480, 640)
+WORLD_SIZE = (960, 1280)
+
+def get_rois(roi_size, overlapping):
+    h, w = roi_size
+    h_p = h - overlapping
+    w_p = w - overlapping
+
+    return [
+        ((0, w), (0, h)),
+        ((w_p, w_p + w), (0, h)),
+        ((0, w), (h_p, h_p + h)),
+        ((w_p, w_p + w), (h_p, h_p + h)),
+    ]
 
 def destitch(img, recorders, frames_stitching, localsize):
     for i in range(frames_stitching[0]):

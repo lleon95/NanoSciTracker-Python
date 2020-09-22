@@ -46,7 +46,6 @@ def get_rois(settings, roi_size, overlapping):
             y1 = j * h_p + int((overlapping * 0.5))
             y2 = y1 + h
             rois.append(((x1, x2), (y1, y2)))
-    print(rois)
     return rois
 
 

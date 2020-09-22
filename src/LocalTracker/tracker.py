@@ -1,6 +1,6 @@
 # NanoSciTracker - 2020
 # Author: Luis G. Leon Vega <luis@luisleon.me>
-# 
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -8,16 +8,16 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-# 
+#
 #   http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-# 
+#
 # This project was sponsored by CNR-IOM
 # Master in High-Performance Computing - SISSA
 
@@ -32,6 +32,7 @@ from features.hog import Hog
 from features.histogram import Histogram
 from features.velocity import Velocity
 
+
 def computeTrackerRoi(roi):
     x1 = roi[0][0]
     y1 = roi[0][1]
@@ -39,12 +40,15 @@ def computeTrackerRoi(roi):
     y2 = roi[1][1]
     return (x1, y1, x2 - x1, y2 - y1)
 
+
 class Tracker:
-    def __init__(self, colour, grayscale=True, timeout=50, offset=None, world_size=None):
+    def __init__(
+        self, colour, grayscale=True, timeout=50, offset=None, world_size=None
+    ):
         self.tracker = cv.TrackerKCF_create()
         self.colour = colour
         self.roi = None
-        self.orig_roi  = None
+        self.orig_roi = None
         self.timeout = timeout
         self.grayscale = grayscale
         self.roi_offset = offset
@@ -77,13 +81,17 @@ class Tracker:
 
     def _validate_roi(self, ROI):
         if not ROI is None:
-            if self.roi[0][0] >= ROI[0] and self.roi[1][0] <= ROI[2] and \
-            self.roi[0][1] >= ROI[1] and self.roi[1][1] <= ROI[3]:
+            if (
+                self.roi[0][0] >= ROI[0]
+                and self.roi[1][0] <= ROI[2]
+                and self.roi[0][1] >= ROI[1]
+                and self.roi[1][1] <= ROI[3]
+            ):
                 return True
             else:
                 return False
         return True
-        
+
     def init(self, frame, roi, stable=True, scene_roi=None):
         self.roi = roi
 
@@ -101,13 +109,13 @@ class Tracker:
         self.hog.initialise(gray, roi)
         self.velocity.initialise(roi)
         self.mosse_valid = self.mosse.initialise(gray, roi)
-        
+
         # Set the flag
         self.stable = stable
 
         # Initialise tracker
         return self.tracker.init(frame, tracker_roi)
-    
+
     def _update_speed(self):
         self.position = computeCenterRoi(self.roi)
         return self.velocity.update(self.roi)
@@ -124,8 +132,8 @@ class Tracker:
 
     def _update_mosse(self, gray):
         cx, cy = computeCenterRoi(self.roi)
-        w2 = self.orig_roi[2]/2
-        h2 = self.orig_roi[3]/2
+        w2 = self.orig_roi[2] / 2
+        h2 = self.orig_roi[3] / 2
 
         p1 = (int(cx - w2), int(cy - h2))
         p2 = (int(cx + w2), int(cy + h2))
@@ -138,7 +146,7 @@ class Tracker:
             self.mosse.update(cropped, centred_roi)
         else:
             self.mosse_valid = self.mosse.initialise(cropped, centred_roi)
-         
+
     def update(self, frame, ROI=None):
         # Analyse if it went out of scene to kill it from the local source
         ok, bbox = self.tracker.update(frame)
@@ -187,11 +195,12 @@ class Tracker:
             self.out_roi = False
 
         return True
-    
+
+
 def updateTrackers(frame, trackers, ROI=None):
     i = 0
     length = len(trackers)
-    
+
     while i < length:
         state = trackers[i].update(frame, ROI)
         if not state:
@@ -201,15 +210,21 @@ def updateTrackers(frame, trackers, ROI=None):
             i += 1
     return trackers
 
-def deployTrackers(colour, bb_list, trackers, ROI=None, offset=None, grayscale=True, world_size=None):
+
+def deployTrackers(
+    colour, bb_list, trackers, ROI=None, offset=None, grayscale=True, world_size=None
+):
     newly_deployed = list([])
     for i in bb_list:
-        tracker = Tracker((0,255,0), offset=offset, grayscale=grayscale, world_size=world_size)
+        tracker = Tracker(
+            (0, 255, 0), offset=offset, grayscale=grayscale, world_size=world_size
+        )
         do_add = tracker.init(colour, i, scene_roi=ROI)
         if do_add:
             trackers.append(tracker)
             newly_deployed.append(tracker)
     return newly_deployed
+
 
 def retrieveBBs(trackers):
     bounding_boxes = []
@@ -217,12 +232,14 @@ def retrieveBBs(trackers):
         bounding_boxes.append(tracker.roi)
     return bounding_boxes
 
+
 def retrieveOutScene(trackers):
     trackers_ = list([])
     for tracker in trackers:
         if tracker.out_roi:
             trackers_.append(tracker)
     return trackers_
+
 
 def retrieveDeadTrackers(trackers):
     trackers_ = list([])

@@ -39,7 +39,7 @@ class Scene:
         detection_roi=None,
         batches=2,
         grayscale=True,
-        world_size = None
+        world_size=None,
     ):
         # Get coordinates
         self.roi = ROI
@@ -106,7 +106,7 @@ class Scene:
                 ROI=self.detection_roi,
                 offset=(self.x0, self.y0),
                 grayscale=self.grayscale,
-                world_size=self.world_size
+                world_size=self.world_size,
             )
         else:
             self.new_detections = []

@@ -23,18 +23,11 @@
 # This project was sponsored by CNR-IOM
 # Master in High-Performance Computing - SISSA
 
-echo "Downloading the data from the NFFA repository"
-
-# Get the dataset
-ls mcherry3.mp4 &> /dev/null || \
-wget "https://datashare.nffa.eu/index.php/s/XS3Eb5tR6Ffmana/download" -O "mcherry3.mp4"
-ls mcherry2.mp4 &> /dev/null || \
-wget "https://datashare.nffa.eu/index.php/s/pXKNCiKQW6LfDyP/download" -O "mcherry2.mp4"
-ls mcherry1.mp4 &> /dev/null || \
-wget "https://datashare.nffa.eu/index.php/s/PY2RcALfYR3zAxj/download" -O "mcherry1.mp4"
-ls mcherry0.mp4 &> /dev/null || \
-wget "https://datashare.nffa.eu/index.php/s/PFqn4x83yPiJqtd/download" -O "mcherry0.mp4"
-ls mcherry.avi &> /dev/null || \
-wget "https://datashare.nffa.eu/index.php/s/DPNrr2bNS7BBGJJ/download" -O "mcherry.avi"
-
-echo "Done!"
+echo "-------------------------------------------------------"
+echo "           NanoSciTracker Dataset Downloader           "
+echo "                 By: Luis G Leon-Vega                  "
+echo "                         2020                          "
+echo "-------------------------------------------------------"
+echo ">>> Downloading data: mcherry"
+cd mcherry
+./download-data.sh

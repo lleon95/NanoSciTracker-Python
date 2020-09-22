@@ -30,10 +30,11 @@ sys.path.append("../src/")
 SCENE_SIZE = (960, 1280)
 WORLD_SIZE = (960, 1280)
 
+
 def get_rois(roi_size, overlapping):
     h, w = roi_size
-    
     return [((0, w), (0, h))]
+
 
 def load(path="../data/mcherry", n=1, resizeTo=(2560, 1920), k=7):
     """
@@ -66,9 +67,9 @@ def load(path="../data/mcherry", n=1, resizeTo=(2560, 1920), k=7):
                 frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
                 frame = cv.resize(frame, resizeTo)
                 data[i].append(frame)
-                print(".", end='')
+                print(".", end="")
             else:
-                print("-", end='')
+                print("-", end="")
                 break
             if cnt % 10 == 0:
                 sys.stdout.flush()

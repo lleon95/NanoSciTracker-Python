@@ -30,6 +30,7 @@ sys.path.append("../src/")
 SCENE_SIZE = (480, 640)
 WORLD_SIZE = (960, 1280)
 
+
 def get_rois(roi_size, overlapping):
     h, w = roi_size
     h_p = h - overlapping
@@ -41,6 +42,7 @@ def get_rois(roi_size, overlapping):
         ((0, w), (h_p, h_p + h)),
         ((w_p, w_p + w), (h_p, h_p + h)),
     ]
+
 
 def destitch(img, recorders, frames_stitching, localsize):
     for i in range(frames_stitching[0]):
@@ -67,7 +69,7 @@ def load(path="../data/mcherry", n=4, resizeTo=(640, 480), k=7):
     # Open video
     caps = []
     for i in range(n):
-        caps.append(cv.VideoCapture(path + "/mcherry"+str(i)+".mp4"))
+        caps.append(cv.VideoCapture(path + "/mcherry" + str(i) + ".mp4"))
 
     # Number of images within the stitching
     frames_stitching = (2, 2)
@@ -87,9 +89,9 @@ def load(path="../data/mcherry", n=4, resizeTo=(640, 480), k=7):
                 frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
                 frame = cv.resize(frame, resizeTo)
                 data[i].append(frame)
-                print(".", end='')
+                print(".", end="")
             else:
-                print("-", end='')
+                print("-", end="")
                 break
             if cnt % 10 == 0:
                 sys.stdout.flush()

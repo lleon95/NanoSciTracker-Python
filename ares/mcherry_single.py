@@ -28,6 +28,7 @@ import sys
 sys.path.append("../src/")
 
 SCENE_SIZE = (960, 1280)
+SCENE_SIZE_SW = (1280, 960)
 WORLD_SIZE = (960, 1280)
 
 
@@ -36,7 +37,7 @@ def get_rois(roi_size, overlapping):
     return [((0, w), (0, h))]
 
 
-def load(path="../data/mcherry", n=1, resizeTo=(2560, 1920), k=7):
+def load(path="../data/mcherry", n=1, resizeTo=SCENE_SIZE_SW, k=7):
     """
     Get a numpy array with the shape (n, m, h, w), where n is the number of scenes,
     m is the number of frames, h is the image height and w is the image width

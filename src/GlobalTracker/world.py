@@ -37,7 +37,6 @@ class World:
         self._dead_trackers = []
         self._last_id = 0
         self._frame_cnt = 0
-        self._batches = 4
 
         if settings is None:
             raise RuntimeError("World settings are not valid")
@@ -54,14 +53,11 @@ class World:
 
         Return: None
         """
-        self._batches = self._settings.set_if_defined("batches", self._batches)
-        grayscale = self._settings.set_if_defined("grayscale", True)
-        world_size = self._settings.set_if_defined("world_size", None)
         for roi in rois:
             self._scenes.append(
                 Scene.Scene(
                     ROI=roi, overlap=overlapping, detection_sampling=sampling_rate, 
-                    batches=self._batches, grayscale=grayscale, world_size=world_size
+                    settings=self._settings
                 )
             )
 

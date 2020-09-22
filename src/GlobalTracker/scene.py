@@ -37,9 +37,7 @@ class Scene:
         overlap=0,
         detection_sampling=3,
         detection_roi=None,
-        batches=2,
-        grayscale=True,
-        world_size=None,
+        settings=None
     ):
         # Get coordinates
         self.roi = ROI
@@ -50,7 +48,6 @@ class Scene:
         self.h = self.y1 - self.y0
         self.overlap = overlap
         self.frame = None
-        self.world_size = world_size
 
         # ROIs
         if detection_roi is None:
@@ -72,16 +69,24 @@ class Scene:
         self.dead_trackers = []
 
         # Settings
-        self.batches = batches
+        self._settings = settings
+
+        if settings is None:
+            raise RuntimeError("Scene settings are not valid")
+
+        self.batches = self._settings.set_if_defined("batches", 2)
+        self.grayscale = self._settings.set_if_defined("grayscale", True)
+        self.world_size = self._settings.set_if_defined("world_size", None)
+
         self.counter = 0
         self.detection_sampling = detection_sampling
-        self.grayscale = grayscale
 
     def load_frame(self, frame):
         self.frame = frame
 
     def detect(self, gray_frame):
-        return Detector.detect(gray_frame, self.batches)
+        padding = self._settings.set_if_defined("padding", None)
+        return Detector.detect(gray_frame, self.batches, padding=padding)
 
     def track(self, colour_frame):
         Tracker.updateTrackers(colour_frame, self.trackers, ROI=self.detection_roi)

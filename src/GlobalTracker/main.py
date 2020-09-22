@@ -54,7 +54,7 @@ def main(args):
                           frames=args.frames)
 
   # Attach world tracker
-  tracking_world = World.World()
+  tracking_world = World.World(settings)
   
   # Generate scenes
   scene_size = settings.set_if_defined("scene_size", args.scene_size)

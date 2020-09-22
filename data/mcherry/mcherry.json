@@ -20,5 +20,7 @@
 
  "global_matcher_weights": {"position": -3, "histogram": 0.4, "mosse": -0.1, "hog": 0.2},
  "global_matcher_threshold": 0.45,
- "global_matcher_death_time": 200
+ "global_matcher_death_time": 200,
+
+ "padding": 24
 }

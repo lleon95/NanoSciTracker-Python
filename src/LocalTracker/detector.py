@@ -140,7 +140,7 @@ def compute_padding(size):
     
     return p1
 
-def label_boxes(markers, size=None):
+def label_boxes(markers, size=None, padding=None):
     '''
     Draw the bounding boxes adding a padding, since the morphological
     operations makes the elements smaller than they actually are.
@@ -163,16 +163,17 @@ def label_boxes(markers, size=None):
     if size is None:
         size = np.shape(heat)
 
-    padding = compute_padding(size)
+    if padding is None:
+        padding = compute_padding(size)
 
     bb_list = get_bbs(labels, padding, padding * min_size_factor,
                       padding * max_size_factor)
     
     return bb_list
 
-def bounding_boxes(negative, size=None):
+def bounding_boxes(negative, size=None, padding_size=None):
     negative[negative == 255] = 1
-    bb_list = label_boxes(negative, size)
+    bb_list = label_boxes(negative, size, padding_size)
     return bb_list
 
 def add_offset(roi, offset):
@@ -190,7 +191,7 @@ def add_offset(roi, offset):
   p2 = (roi[1][0] + offset[0], roi[1][1] + offset[1])
   return [p1, p2]
 
-def detect(img, batches=2, size=None, ROI=None):
+def detect(img, batches=2, size=None, ROI=None, padding=None):
     '''
     Performs the detection by using binarisation and thresholding. It's
     principle is based on Otsu's thresholding followed by local maxima
@@ -226,7 +227,7 @@ def detect(img, batches=2, size=None, ROI=None):
     k = compute_k(np.shape(otsu))
     maxima = locate_maxima(otsu, k)
     # Get the bounding boxes
-    bbs = bounding_boxes(maxima, size)
+    bbs = bounding_boxes(maxima, size, padding)
 
     # Add offset if needed
     if add_offset_sw:

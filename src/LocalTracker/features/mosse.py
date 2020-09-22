@@ -276,7 +276,7 @@ class MosseFilter(Feature):
         PSR1 = self.PSR
         
         # Get the distribution. The addition should be greater than th_t
-        if PSR1 < 1e-7:
+        if PSR1 < 1.:
             ret = 1
         else:
             ret = 1./PSR1

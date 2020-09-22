@@ -34,17 +34,18 @@ sys.path.append("../src/Matcher")
 
 import GlobalTracker.world as World
 import GlobalTracker.utils as Utils
-import mcherry as Dataset
+import mcherry_single as Dataset
 
 ## --------- Parameters ------------
-SCENE_SIZE = (480, 640)
-WORLD_SIZE = (960, 1280)
+SCENE_SIZE = Dataset.SCENE_SIZE
+WORLD_SIZE = Dataset.WORLD_SIZE
 
 def main(args):
   global SCENE_SIZE, WORLD_SIZE
 
   # Retrieve the dataset
   h, w = SCENE_SIZE
+  H, W = WORLD_SIZE
   print("Loading data...")
   dataset, order = Dataset.load(args.dataset, resizeTo=(w, h))
   print("Loaded: ", dataset.shape)
@@ -54,13 +55,13 @@ def main(args):
   tracking_world = World.World()
   
   # Generate scenes
-  rois = Utils.build_rois(SCENE_SIZE, args.overlapping)
+  rois = Dataset.get_rois(SCENE_SIZE, args.overlapping)
   tracking_world.spawn_scenes(rois, args.overlapping, \
     args.sampling_rate_detection)
 
   if args.record:
     fourcc = cv.VideoWriter_fourcc(*'MP4V')
-    record = cv.VideoWriter('./video.mp4',fourcc, 25, WORLD_SIZE, True)
+    record = cv.VideoWriter('./video.mp4',fourcc, 25, (W, H), True)
 
   # Run the simulation
   for frame_idx in range(n_frames):
@@ -78,11 +79,15 @@ def main(args):
 
     # Label the world objects
     world_labeled = tracking_world.draw_trackers(drawing)
-    cv.imshow("World", world_labeled)
+    print(".", end='')
+    sys.stdout.flush()
+    
+    if args.display:
+      cv.imshow("World", world_labeled)
+      cv.waitKey(1)
 
     if args.record:
       record.write(world_labeled)
-    cv.waitKey(1)
 
     time.sleep(args.delay_player)
   
@@ -105,11 +110,15 @@ if __name__ == "__main__":
   parser.add_argument('--sampling_rate_detection', type=float,
                       help='Decimation of the detection',
                       default=3)
-  parser.add_argument('--record', type=bool, help='Enable video recording',
-                      default=False)
+  parser.add_argument('--record', help='Enable video recording',
+                      dest='record', action='store_true')
   parser.add_argument('--framerate', type=float,
                       help='In case of recording, the framerate',
                       default=25)
+  parser.add_argument('--no-display', help='Display analysis', dest='display', 
+                      action='store_false')
+  parser.set_defaults(display=True)
+  parser.set_defaults(record=False)
   
   args = parser.parse_args()
   main(args)

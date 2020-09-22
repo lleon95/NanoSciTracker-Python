@@ -36,6 +36,7 @@ class World:
         self._dead_trackers = []
         self._last_id = 0
         self._frame_cnt = 0
+        self._batches = 4
 
     def spawn_scenes(self, rois, overlapping=0, sampling_rate=3):
         """
@@ -52,7 +53,8 @@ class World:
         for roi in rois:
             self._scenes.append(
                 Scene.Scene(
-                    ROI=roi, overlap=overlapping, detection_sampling=sampling_rate
+                    ROI=roi, overlap=overlapping, detection_sampling=sampling_rate, 
+                    batches=self._batches
                 )
             )
 
@@ -74,8 +76,8 @@ class World:
         '''
 
         #TODO: Make this parametric
-        weights = {"position": -0.4, "velocity": -0.3, "angle": 0.2, "histogram": 0.4}
-        threshold = 0.35
+        weights = {"position": -3, "histogram": 0.4, "mosse": -0.1, "hog": 0.2}
+        threshold = 0.45
         match_instance = GlobalMatcher.Matcher(weights, threshold)
 
         # Perform matching
@@ -89,7 +91,10 @@ class World:
         requires to be analysed for matching
         """
         self._frame_cnt += 1
-        match_instance = GlobalMatcher.Matcher()
+        weights = {"position": -3, "histogram": 0.4, "mosse": -0.1, "hog": 0.2}
+        threshold = 0.45
+        death_time = 200
+        match_instance = GlobalMatcher.Matcher(weights, threshold, death_time)
 
         # Perform cleaning of replicates - this avoids redundancies
         (
@@ -138,7 +143,7 @@ class World:
         if not frames is None:
             self.load_frames(frames)
 
-        dead_v = list([])
+        self._dead_trackers = list([])
         for scene in self._scenes:
             cur, out, new, dead = scene.update()
             self._new_trackers += new

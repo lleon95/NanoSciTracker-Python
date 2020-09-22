@@ -71,11 +71,13 @@ def main(args):
 
     # Label the world objects
     world_labeled = tracking_world.draw_trackers(drawing)
-    cv.imshow("World", world_labeled)
+    
+    if args.display:
+      cv.imshow("World", world_labeled)
+      cv.waitKey(1)
 
     if args.record:
       record.write(world_labeled)
-    cv.waitKey(1)
 
     time.sleep(args.delay_player)
   
@@ -107,8 +109,10 @@ if __name__ == "__main__":
   parser.add_argument('--sampling_rate_detection', type=float,
                       help='Decimation of the detection',
                       default=3)
-  parser.add_argument('--record', type=bool, help='Enable video recording',
-                      default=False)
+  parser.add_argument('--no-display', help='Display analysis', dest='display', 
+                      action='store_false')
+  parser.add_argument('--record', help='Enable video recording',
+                      dest='record', action='store_true')
   
   args = parser.parse_args()
   main(args)

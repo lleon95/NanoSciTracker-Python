@@ -27,52 +27,31 @@ import sys
 
 sys.path.append("../src/")
 
-SCENE_SIZE = (480, 640)
+SCENE_SIZE = (960, 1280)
+SCENE_SIZE_SW = (1280, 960)
 WORLD_SIZE = (960, 1280)
 
 
 def get_rois(roi_size, overlapping):
     h, w = roi_size
-    h_p = h - overlapping
-    w_p = w - overlapping
-
-    return [
-        ((0, w), (0, h)),
-        ((w_p, w_p + w), (0, h)),
-        ((0, w), (h_p, h_p + h)),
-        ((w_p, w_p + w), (h_p, h_p + h)),
-    ]
+    return [((0, w), (0, h))]
 
 
-def destitch(img, recorders, frames_stitching, localsize):
-    for i in range(frames_stitching[0]):
-        for j in range(frames_stitching[1]):
-            index = i + frames_stitching[0] * j
-            # Crop
-            y0 = j * localsize[1]
-            y1 = (j + 1) * localsize[1]
-            x0 = i * localsize[0]
-            x1 = (i + 1) * localsize[0]
-            frame = img[y0:y1, x0:x1]
-            recorders[index].append(frame)
-
-
-def load(path="../data/mcherry", n=4, resizeTo=(640, 480), k=7):
+def load(path="../data/mcherry", n=1, resizeTo=SCENE_SIZE_SW, k=7):
     """
     Get a numpy array with the shape (n, m, h, w), where n is the number of scenes,
     m is the number of frames, h is the image height and w is the image width
     """
     # Sizes
-    size = (2560, 1920)
-    local_size = (1280, 960)
+    size = local_size = (2560, 1920)
 
     # Open video
     caps = []
     for i in range(n):
-        caps.append(cv.VideoCapture(path + "/mcherry" + str(i) + ".mp4"))
+        caps.append(cv.VideoCapture(path + "/mcherry.avi"))
 
     # Number of images within the stitching
-    frames_stitching = (2, 2)
+    frames_stitching = (1, 1)
 
     # Prepare array:
     data = []
@@ -102,4 +81,4 @@ def load(path="../data/mcherry", n=4, resizeTo=(640, 480), k=7):
         caps[i].release()
 
     # Convert into numpy array
-    return np.array(data), [0, 1, 2, 3]
+    return np.array(data), [0]

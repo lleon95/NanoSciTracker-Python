@@ -10,7 +10,7 @@
  "dead_tracker_threshold": 0.35,
  "dead_tracker_death_time": 100,
 
- "global_matcher_weights": {"position": -0.5, "velocity": -0.2, "angle": 0.1, "histogram": 0.3, "mosse": -0.5},
+ "global_matcher_weights": {"position": -0.25, "velocity": -0.2, "angle": 0.2, "histogram": 0.4},
  "global_matcher_threshold": 0.45,
  "global_matcher_death_time": 100
 }

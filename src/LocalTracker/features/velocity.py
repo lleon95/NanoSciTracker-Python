@@ -50,13 +50,17 @@ class SpeedFeature():
         return self._compute()
 
 class Velocity(Feature):
-    def __init__(self, mmp=30, compare={"position": False, "speed": True, "angle": True}):
+    def __init__(self, mmp=30, compare={"position": False, "speed": True, "angle": True}, world_size=None):
         super().__init__()
         # Feature - speed
         self.speed = None
         self.direction = None
         self.position = None
         self.mmp = mmp
+        self.world_size = world_size
+
+        if world_size is None:
+            raise ValueError("Error: World size cannot be none in Velocity")
 
         # Comparison features
         self.compare_position = compare["position"]
@@ -91,7 +95,7 @@ class Velocity(Feature):
         feature_comparison = np.zeros((3,))
         # Compare speed
         if self.compare_speed:
-            normaliser = np.linalg.norm([960,1280])
+            normaliser = np.linalg.norm(self.world_size)
             x_v = [self.speed[0].speed, self.speed[1].speed]
             y_v = [velocity2.speed[0].speed, velocity2.speed[1].speed]
             x_v /= normaliser

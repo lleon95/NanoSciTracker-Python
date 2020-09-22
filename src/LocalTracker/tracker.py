@@ -40,7 +40,7 @@ def computeTrackerRoi(roi):
     return (x1, y1, x2 - x1, y2 - y1)
 
 class Tracker:
-    def __init__(self, colour, grayscale=True, timeout=50, offset=None):
+    def __init__(self, colour, grayscale=True, timeout=50, offset=None, world_size=None):
         self.tracker = cv.TrackerKCF_create()
         self.colour = colour
         self.roi = None
@@ -48,6 +48,9 @@ class Tracker:
         self.timeout = timeout
         self.grayscale = grayscale
         self.roi_offset = offset
+
+        if world_size is None:
+            raise ValueError("Error: World size cannot be none in Tracker")
 
         # Label - Treated like an object for convenience
         self.label = None
@@ -57,7 +60,7 @@ class Tracker:
         self.histo_lr = 0.1
 
         # Features
-        self.velocity = Velocity(mmp=self.sample_bins)
+        self.velocity = Velocity(mmp=self.sample_bins, world_size=world_size)
         self.histogram = Histogram(grayscale)
         self.hog = Hog()
         self.position = None
@@ -198,10 +201,10 @@ def updateTrackers(frame, trackers, ROI=None):
             i += 1
     return trackers
 
-def deployTrackers(colour, bb_list, trackers, ROI=None, offset=None, grayscale=True):
+def deployTrackers(colour, bb_list, trackers, ROI=None, offset=None, grayscale=True, world_size=None):
     newly_deployed = list([])
     for i in bb_list:
-        tracker = Tracker((0,255,0), offset=offset, grayscale=grayscale)
+        tracker = Tracker((0,255,0), offset=offset, grayscale=grayscale, world_size=world_size)
         do_add = tracker.init(colour, i, scene_roi=ROI)
         if do_add:
             trackers.append(tracker)

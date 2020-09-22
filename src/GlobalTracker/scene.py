@@ -39,6 +39,7 @@ class Scene:
         detection_roi=None,
         batches=2,
         grayscale=True,
+        world_size = None
     ):
         # Get coordinates
         self.roi = ROI
@@ -49,6 +50,7 @@ class Scene:
         self.h = self.y1 - self.y0
         self.overlap = overlap
         self.frame = None
+        self.world_size = world_size
 
         # ROIs
         if detection_roi is None:
@@ -104,6 +106,7 @@ class Scene:
                 ROI=self.detection_roi,
                 offset=(self.x0, self.y0),
                 grayscale=self.grayscale,
+                world_size=self.world_size
             )
         else:
             self.new_detections = []

@@ -31,32 +31,38 @@ sys.path.append("../src")
 sys.path.append("../src/GlobalTracker")
 sys.path.append("../src/LocalTracker")
 sys.path.append("../src/Matcher")
+sys.path.append("../src/Utils")
 
 import GlobalTracker.world as World
 import GlobalTracker.utils as Utils
 import mcherry_single as Dataset
-
-## --------- Parameters ------------
-SCENE_SIZE = Dataset.SCENE_SIZE
-WORLD_SIZE = Dataset.WORLD_SIZE
+import Utils.json_settings as Settings
 
 def main(args):
-  global SCENE_SIZE, WORLD_SIZE
+  # Retrieve settings
+  settings = Settings.Settings(args.dataset)
+  if not settings.is_valid():
+    print("Error: Settings not valid")
+    return
+
+  world_size = settings.set_if_defined("world_size", Dataset.WORLD_SIZE)
+  scene_size = settings.set_if_defined("scene_size", Dataset.SCENE_SIZE)
+  overlapping = settings.set_if_defined("overlapping", args.overlapping)
 
   # Retrieve the dataset
-  h, w = SCENE_SIZE
-  H, W = WORLD_SIZE
+  h, w = scene_size
+  H, W = world_size
   print("Loading data...")
-  dataset, order = Dataset.load(args.dataset, resizeTo=(w, h))
+  dataset, order = Dataset.load(settings, resizeTo=(w, h))
   print("Loaded: ", dataset.shape)
   n_frames = dataset.shape[1]
 
   # Attach world tracker
-  tracking_world = World.World()
+  tracking_world = World.World(settings)
   
   # Generate scenes
-  rois = Dataset.get_rois(SCENE_SIZE, args.overlapping)
-  tracking_world.spawn_scenes(rois, args.overlapping, \
+  rois = Dataset.get_rois(scene_size, overlapping)
+  tracking_world.spawn_scenes(rois, overlapping, \
     args.sampling_rate_detection)
 
   if args.record:
@@ -74,7 +80,7 @@ def main(args):
     tracking_world.update_trackers(frames)
 
     # Draw rectange overlay to determine where are the ROIS
-    drawing = Utils.naive_stitch(frames, WORLD_SIZE, SCENE_SIZE, order)
+    drawing = Utils.naive_stitch(frames, world_size, scene_size, order)
     Utils.draw_roi(drawing, rois)
 
     # Label the world objects
@@ -99,7 +105,7 @@ if __name__ == "__main__":
   # Handle the arguments
   parser = argparse.ArgumentParser(description='Performs the local tracking')
   parser.add_argument('--dataset', type=str,
-                      help='Choose the dataset', default='../data/mcherry')
+                      help='Choose the dataset', default='../data/mcherry/mcherry_single.json')
   parser.add_argument('--overlapping', type=int,
                       help='Overlapping of the scene in pixels', default=10)
   parser.add_argument('--frames', type=int,

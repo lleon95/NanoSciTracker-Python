@@ -1,0 +1,16 @@
+{"grayscale": false,
+ "batches": 2,
+ 
+ "world_size": [1200,1400,3],
+ "scene_size": [480, 640],
+ "original_size": [1200,1400],
+ "scenes": 4,
+
+ "dead_tracker_weights": {"position": -0.4, "velocity": -0.3, "angle": 0.2, "histogram": 0.4},
+ "dead_tracker_threshold": 0.35,
+ "dead_tracker_death_time": 100,
+
+ "global_matcher_weights": {"position": -0.5, "velocity": -0.2, "angle": 0.1, "histogram": 0.3, "mosse": -0.5},
+ "global_matcher_threshold": 0.45,
+ "global_matcher_death_time": 100
+}

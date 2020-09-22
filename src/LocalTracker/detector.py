@@ -73,18 +73,25 @@ def compute_k(size):
     '''
     Computes the kernel size for the maxima
     
-    Standard playground size: 1280 × 960, k0 = 17 
+    Standard playground size: 2560 × 1920, k0 = 17 
     Minimum: 230 x 170
     '''
+    # Standard playground
+    k0 = 17
+    w0 = 2560
+    h0 = 1920
+    w_min = 450
+    h_min = 340
+
     h = size[0]
     w = size[1]
     
     # If the image gives a k < 3, just return 3
-    if h <= 170 and w <= 230:
+    if h <= h_min and w <= w_min:
         return 3
     
-    k1_1 = h * 17 / 1920
-    k1_2 = w * 17 / 2560
+    k1_1 = h * k0 / h0
+    k1_2 = w * k0 / w0
     
     k1 = int((k1_1 + k1_2) / 2)
     
@@ -116,19 +123,38 @@ def compute_padding(size):
     '''
     Computes the padding size for the bboxes
     
-    Standard playground size: 1280 × 960, k0 = 35
+    Standard playground size: 1280 × 960, p0 = 32
     '''
+    # Reference playground
+    p0 = 32
+    w0 = 1280
+    h0 = 960
+
     h = size[0]
     w = size[1]
     
-    p1_1 = h * 32 / 960
-    p1_2 = w * 32 / 1280
+    p1_1 = h * p0 / h0
+    p1_2 = w * p0 / w0
     
     p1 = int((p1_1 + p1_2) / 2)
     
     return p1
 
 def label_boxes(markers, size=None):
+    '''
+    Draw the bounding boxes adding a padding, since the morphological
+    operations makes the elements smaller than they actually are.
+
+    Return the bounding boxes
+    On a playground, the sizes are:
+
+    padding: 32
+    min_size: padding / 2
+    max_size: padding * 4
+    '''
+    min_size_factor = 0.5
+    max_size_factor = 4
+
     heat = np.zeros_like(markers[:,:]).astype(np.float) 
     heat[markers == 1] = 255
 
@@ -138,8 +164,9 @@ def label_boxes(markers, size=None):
         size = np.shape(heat)
 
     padding = compute_padding(size)
-    # FIXME: Pay attention on the max size
-    bb_list = get_bbs(labels, padding, padding / 2, padding * 4)
+
+    bb_list = get_bbs(labels, padding, padding * min_size_factor,
+                      padding * max_size_factor)
     
     return bb_list
 

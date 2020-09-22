@@ -35,7 +35,7 @@ sys.path.append("../src/Utils")
 
 import GlobalTracker.world as World
 import GlobalTracker.utils as Utils
-import mcherry_single as Dataset
+import mcherry as Dataset
 import Utils.json_settings as Settings
 
 def main(args):
@@ -61,7 +61,7 @@ def main(args):
   tracking_world = World.World(settings)
   
   # Generate scenes
-  rois = Dataset.get_rois(scene_size, overlapping)
+  rois = Dataset.get_rois(settings, scene_size, overlapping)
   tracking_world.spawn_scenes(rois, overlapping, \
     args.sampling_rate_detection)
 

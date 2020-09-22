@@ -54,11 +54,13 @@ class World:
 
         Return: None
         """
+        self._batches = self._settings.set_if_defined("batches", self._batches)
+        grayscale = self._settings.set_if_defined("grayscale", True)
         for roi in rois:
             self._scenes.append(
                 Scene.Scene(
                     ROI=roi, overlap=overlapping, detection_sampling=sampling_rate, 
-                    batches=self._batches
+                    batches=self._batches, grayscale=grayscale
                 )
             )
 

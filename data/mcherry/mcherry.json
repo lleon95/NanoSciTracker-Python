@@ -1,0 +1,26 @@
+{"grayscale": false,
+ "batches": 2,
+ 
+ "world_size": [960, 1280],
+ "scene_size": [480, 640],
+ "original_size": [1920, 2560],
+ "scenes": 4,
+ "overlapping": 10,
+ "stitching": [2,2],
+ "stitching_order": [0, 1, 2, 3],
+
+ "file_path": "data/mcherry",
+ "file_prefix": "mcherry",
+ "file_suffix": ".mp4",
+ "file_enumerated": true,
+
+ "dead_tracker_weights": {"position": -3, "histogram": 0.4, "mosse": -0.1, "hog": 0.2},
+ "dead_tracker_threshold": 0.45,
+ "dead_tracker_death_time": 100,
+
+ "global_matcher_weights": {"position": -3, "histogram": 0.4, "mosse": -0.1, "hog": 0.2},
+ "global_matcher_threshold": 0.45,
+ "global_matcher_death_time": 200,
+
+ "padding": 24
+}

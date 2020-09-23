@@ -28,7 +28,8 @@ import LocalTracker.drawutils as DrawUtils
 
 
 class World:
-    def __init__(self):
+    def __init__(self, settings=None):
+        self._settings = settings
         self._scenes = []
         self._new_trackers = []
         self._current_trackers = []
@@ -36,7 +37,9 @@ class World:
         self._dead_trackers = []
         self._last_id = 0
         self._frame_cnt = 0
-        self._batches = 4
+
+        if settings is None:
+            raise RuntimeError("World settings are not valid")
 
     def spawn_scenes(self, rois, overlapping=0, sampling_rate=3):
         """
@@ -54,7 +57,7 @@ class World:
             self._scenes.append(
                 Scene.Scene(
                     ROI=roi, overlap=overlapping, detection_sampling=sampling_rate, 
-                    batches=self._batches
+                    settings=self._settings
                 )
             )
 
@@ -75,10 +78,10 @@ class World:
         This perform operations on: current, new, and dead trackers
         '''
 
-        #TODO: Make this parametric
-        weights = {"position": -3, "histogram": 0.4, "mosse": -0.1, "hog": 0.2}
-        threshold = 0.45
-        match_instance = GlobalMatcher.Matcher(weights, threshold)
+        weights = self._settings.set_if_defined("dead_tracker_weights", None)
+        threshold = self._settings.set_if_defined("dead_tracker_threshold", None)
+        death_time = self._settings.set_if_defined("dead_tracker_death_time", None)
+        match_instance = GlobalMatcher.Matcher(weights, threshold, death_time)
 
         # Perform matching
         return match_instance.match(
@@ -91,9 +94,10 @@ class World:
         requires to be analysed for matching
         """
         self._frame_cnt += 1
-        weights = {"position": -3, "histogram": 0.4, "mosse": -0.1, "hog": 0.2}
-        threshold = 0.45
-        death_time = 200
+
+        weights = self._settings.set_if_defined("global_matcher_weights", None)
+        threshold = self._settings.set_if_defined("global_matcher_threshold", None)
+        death_time = self._settings.set_if_defined("global_matcher_death_time", None)
         match_instance = GlobalMatcher.Matcher(weights, threshold, death_time)
 
         # Perform cleaning of replicates - this avoids redundancies

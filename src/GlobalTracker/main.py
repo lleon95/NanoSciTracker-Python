@@ -31,24 +31,37 @@ sys.path.append("../")
 sys.path.append("../LocalTracker/")
 sys.path.append("../GlobalTracker/")
 sys.path.append("../Matcher/")
+sys.path.append("../Utils/")
 
 import Playground.generator as Generator
 import GlobalTracker.world as World
 import GlobalTracker.utils as Utils
+import Utils.json_settings as Settings
 
 def main(args):
+  # Open Settings
+  settings = Settings.Settings("playground.json")
+  if not settings.is_valid():
+    print("Error: Settings not valid")
+    return
+
   # Generate the world
-  my_world = Generator.World(playground_size=args.world_size,
+  world_size = settings.set_if_defined("world_size", args.world_size)
+
+  my_world = Generator.World(playground_size=world_size,
                           mitosis=args.mitosis_rate,
                           instances=args.number_of_instances,
                           frames=args.frames)
 
   # Attach world tracker
-  tracking_world = World.World()
+  tracking_world = World.World(settings)
   
   # Generate scenes
-  rois = Utils.build_rois(args.scene_size, args.overlapping)
-  tracking_world.spawn_scenes(rois, args.overlapping, \
+  scene_size = settings.set_if_defined("scene_size", args.scene_size)
+  overlapping = settings.set_if_defined("overlapping", args.overlapping)
+
+  rois = Utils.build_rois(scene_size, overlapping)
+  tracking_world.spawn_scenes(rois, overlapping, \
     args.sampling_rate_detection)
 
   if args.record:

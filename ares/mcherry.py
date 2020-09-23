@@ -27,52 +27,59 @@ import sys
 
 sys.path.append("../src/")
 
-SCENE_SIZE = (480, 640)
+SCENE_SIZE = (960, 1280)
+SCENE_SIZE_SW = (1280, 960)
 WORLD_SIZE = (960, 1280)
 
 
-def get_rois(roi_size, overlapping):
+def get_rois(settings, roi_size, overlapping):
     h, w = roi_size
-    h_p = h - overlapping
-    w_p = w - overlapping
+    h_p = h - (overlapping)
+    w_p = w - (overlapping)
+    rois = list([])
+    fx, fy = settings.set_if_defined("stitching", [1,1])
 
-    return [
-        ((0, w), (0, h)),
-        ((w_p, w_p + w), (0, h)),
-        ((0, w), (h_p, h_p + h)),
-        ((w_p, w_p + w), (h_p, h_p + h)),
-    ]
-
-
-def destitch(img, recorders, frames_stitching, localsize):
-    for i in range(frames_stitching[0]):
-        for j in range(frames_stitching[1]):
-            index = i + frames_stitching[0] * j
-            # Crop
-            y0 = j * localsize[1]
-            y1 = (j + 1) * localsize[1]
-            x0 = i * localsize[0]
-            x1 = (i + 1) * localsize[0]
-            frame = img[y0:y1, x0:x1]
-            recorders[index].append(frame)
+    for j in range(fy):
+        for i in range(fx):
+            x1 = i * w_p + int((overlapping * 0.5))
+            x2 = x1 + w
+            y1 = j * h_p + int((overlapping * 0.5))
+            y2 = y1 + h
+            rois.append(((x1, x2), (y1, y2)))
+    return rois
 
 
-def load(path="../data/mcherry", n=4, resizeTo=(640, 480), k=7):
+def load(settings=None, n=1, resizeTo=SCENE_SIZE_SW, k=7):
     """
     Get a numpy array with the shape (n, m, h, w), where n is the number of scenes,
     m is the number of frames, h is the image height and w is the image width
     """
+    if settings is None:
+        raise RuntimeError("Error: settings cannot be None in dataset loader")
+    
     # Sizes
-    size = (2560, 1920)
-    local_size = (1280, 960)
+    H, W = settings.set_if_defined("original_size", [1920, 2560])
+    size = (W, H)
 
     # Open video
     caps = []
+    n = settings.set_if_defined("scenes", n)
+    path = "../"
+    path += settings.set_if_defined("file_path", "data/mcherry")
+    prefix = settings.set_if_defined("file_prefix", "mcherry")
+    suffix = settings.set_if_defined("file_suffix", ".avi")
+    is_enumerated = settings.set_if_defined("file_enumerated", False)
+
     for i in range(n):
-        caps.append(cv.VideoCapture(path + "/mcherry" + str(i) + ".mp4"))
+        if is_enumerated:
+            file = path + "/" + prefix + str(i) + suffix
+        else:
+            file = path + "/" + prefix + suffix
+        print(file)
+        caps.append(cv.VideoCapture(file))
 
     # Number of images within the stitching
-    frames_stitching = (2, 2)
+    frames_stitching = settings.set_if_defined("stitching", [1,1])
 
     # Prepare array:
     data = []
@@ -102,4 +109,4 @@ def load(path="../data/mcherry", n=4, resizeTo=(640, 480), k=7):
         caps[i].release()
 
     # Convert into numpy array
-    return np.array(data), [0, 1, 2, 3]
+    return np.array(data), settings.set_if_defined("stitching_order", [0])

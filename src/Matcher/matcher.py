@@ -39,12 +39,20 @@ import numpy as np
 
 
 class Matcher:
-    def __init__(
-        self,
-        weights={"position": -0.5, "velocity": -0.2, "angle": 0.1, "histogram": 0.3, "mosse": -0.5},
-        th=0.45,
-        max_dead_time=100,
-    ):
+    def __init__(self, weights=None, th=None, max_dead_time=None):
+        # Defaulting
+        if weights is None:
+            weights = {
+                "position": -0.5,
+                "velocity": -0.2,
+                "angle": 0.1,
+                "histogram": 0.3,
+                "mosse": -0.5,
+            }
+        if th is None:
+            th = 0.45
+        if max_dead_time is None:
+            max_dead_time = 100
         # Features to analyse
         self.ce_position = weights.get("position", 0.0) != 0.0
         self.ce_velocity = weights.get("velocity", 0.0) != 0.0

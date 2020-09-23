@@ -171,9 +171,9 @@ def label_boxes(markers, size=None, padding=None):
     
     return bb_list
 
-def bounding_boxes(negative, size=None, padding_size=None):
+def bounding_boxes(negative, size=None, padding=None):
     negative[negative == 255] = 1
-    bb_list = label_boxes(negative, size, padding_size)
+    bb_list = label_boxes(negative, size, padding)
     return bb_list
 
 def add_offset(roi, offset):

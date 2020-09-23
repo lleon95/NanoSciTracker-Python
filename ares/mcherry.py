@@ -68,10 +68,10 @@ def load(settings=None, n=1, resizeTo=SCENE_SIZE_SW, k=7):
     path += settings.set_if_defined("file_path", "data/mcherry")
     prefix = settings.set_if_defined("file_prefix", "mcherry")
     suffix = settings.set_if_defined("file_suffix", ".avi")
-    is_enumered = settings.set_if_defined("file_enumered", False)
+    is_enumerated = settings.set_if_defined("file_enumerated", False)
 
     for i in range(n):
-        if is_enumered:
+        if is_enumerated:
             file = path + "/" + prefix + str(i) + suffix
         else:
             file = path + "/" + prefix + suffix

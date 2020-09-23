@@ -12,7 +12,7 @@
  "file_path": "data/mcherry",
  "file_prefix": "mcherry",
  "file_suffix": ".avi",
- "file_enumered": false,
+ "file_enumerated": false,
 
  "dead_tracker_weights": {"position": -3, "histogram": 0.4, "mosse": -0.1, "hog": 0.2},
  "dead_tracker_threshold": 0.45,

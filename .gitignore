@@ -3,3 +3,5 @@ __pycache__
 data/ctrl6_72h
 *.avi
 .vscode
+
+results.txt

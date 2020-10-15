@@ -37,6 +37,7 @@ class World:
         self._dead_trackers = []
         self._last_id = 0
         self._frame_cnt = 0
+        self._tracer = None
 
         if settings is None:
             raise RuntimeError("World settings are not valid")
@@ -156,6 +157,11 @@ class World:
 
         self._update_current_trackers()
 
+        # Add trace
+        if not self._tracer is None:
+            self._tracer.push(self._current_trackers, self._new_trackers, \
+                self._out_trackers, self._dead_trackers)
+
     def label_scenes(self):
         """
         Draw the tracking and detection within a copy of the frame
@@ -196,3 +202,10 @@ class World:
             frame, "Cur: " + str(len(self._current_trackers)), (0, 30)
         )
         return frame
+
+    def attach_tracer(self, tracer):
+        self._tracer = tracer
+
+    def dump_trackers(self):
+        if not self._tracer is None:
+            self._tracer.dump(self._settings)

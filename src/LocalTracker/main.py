@@ -45,6 +45,7 @@ def main(args):
     plt.ion()
 
     detection_roi = (10, 10, 630, 470)
+    scene_size = (640, 480)
 
     while cap.isOpened():
         # Grab the frame
@@ -54,7 +55,7 @@ def main(args):
 
         detection_bbs = []
         new_detections = []
-        frame = cv.resize(big_frame, (640, 480))
+        frame = cv.resize(big_frame, scene_size)
 
         # Grayscale
         gray_detect = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
@@ -66,7 +67,7 @@ def main(args):
         if counter % args.sample_detection:
             detection_bbs = detector.detect(gray_detect, ROI=detection_roi)
             new_detections = matcher.inter_match(detection_bbs, trackers)
-            tracker.deployTrackers(frame, new_detections, trackers)
+            tracker.deployTrackers(frame, new_detections, trackers, world_size=scene_size)
 
         # Update the trackers
         tracker.updateTrackers(frame, trackers, ROI=detection_roi)

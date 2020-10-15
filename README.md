@@ -1,6 +1,6 @@
 # NanoSciTracker-Python
 
-Nano science tracker prototyped in Python
+Nanoscience tracker prototyped in Python
 
 ## Dependencies
 
@@ -41,15 +41,57 @@ To run an analysis over the sample (assume the sample name is loaded in
 
 ```bash
 cd src/LocalTracker
-./main.py --input ../../data/$SAMPLE --draw_detection=1 --draw_tracking=1
+./main.py --input ../../data/mcherry/$SAMPLE --draw_detection=1 --draw_tracking=1
 ```
 
-The modifiers for `main.py` are:
+### Global tracker
 
-* `--input`: loads the video sequence
-* `--draw_detection`: shows the detection on a window
-* `--draw_tracking`: shows the tracking on a window
-* `--sample_tracking`: sets the frame number to set deploy the tracking
+The global tracker creates a particle world with multi-scene capabilities.
+
+To download a sample for analysis:
+
+```bash
+cd data
+./download-data.sh
+```
+
+To run an analysis over the sample (assume the sample name is loaded in 
+`SAMPLE`):
+
+```bash
+cd src/GlobalTracker
+./main.py
+```
+
+The check the modifiers for `main.py`::
+
+* `./main.py --help`
+
+### ARES demo
+
+This is the full demo of the project
+
+To download a sample for analysis:
+
+```bash
+cd data
+./download-data.sh
+```
+
+To run an analysis over the sample:
+
+```bash
+cd src/ares
+# For single scene mode
+./main.py --dataset=../data/mcherry/mcherry_single.json
+# For multi-scene mode
+./main.py --dataset=../data/mcherry/mcherry.json
+```
+
+The check the modifiers for `main.py`::
+
+* `./main.py --help`
 
 Version: 0.1.0
+
 Author: Luis G. Leon-Vega

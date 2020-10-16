@@ -22,5 +22,8 @@
  "global_matcher_threshold": 0.45,
  "global_matcher_death_time": 200,
 
- "padding": 24
+ "padding": 24,
+
+ "enable_tracer": ["rel_position", "abs_position", "speed", "direction"],
+ "trace_status": [0]
 }

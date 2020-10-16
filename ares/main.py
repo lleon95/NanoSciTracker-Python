@@ -37,7 +37,7 @@ import GlobalTracker.world as World
 import GlobalTracker.utils as Utils
 import mcherry as Dataset
 import Utils.json_settings as Settings
-
+from Utils.json_tracer import Tracer
 
 def main(args):
     # Retrieve settings
@@ -60,6 +60,10 @@ def main(args):
 
     # Attach world tracker
     tracking_world = World.World(settings)
+
+    # Attach tracer
+    tracer = Tracer(settings)
+    tracking_world.attach_tracer(tracer)
 
     # Generate scenes
     rois = Dataset.get_rois(settings, scene_size, overlapping)

@@ -99,23 +99,15 @@ class Tracer:
 
     def push(self, current, new, out, dead):
         frame = []
+        tracker_lists = (current, new, out, dead)
+        start_state = 0
+        number_states = 4
 
-        # Add current trackers to the frame
-        if 0 in self.__status:
-            for tracker in current:
-                frame.append(self._create_entry(tracker, 0))
-        # Add new trackers to the frame
-        if 1 in self.__status:
-            for tracker in new:
-                frame.append(self._create_entry(tracker, 1))
-        # Add out trackers to the frame
-        if 2 in self.__status:
-            for tracker in out:
-                frame.append(self._create_entry(tracker, 2))
-        # Add dead trackers to the frame
-        if 3 in self.__status:
-            for tracker in dead:
-                frame.append(self._create_entry(tracker, 3))
+        # Add trackers filtered out by __status
+        for i in range(start_state, number_states):
+            if i in self.__status:
+                for tracker in tracker_lists[i]:
+                    frame.append(self._create_entry(tracker, i))
 
         self.__data.append(frame)
 

@@ -208,4 +208,7 @@ class World:
 
     def dump_trackers(self):
         if not self._tracer is None:
-            self._tracer.dump(self._settings)
+            self._tracer.dump()
+            
+    def __del__(self):
+        self.dump_trackers()

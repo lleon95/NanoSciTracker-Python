@@ -104,9 +104,6 @@ def main(args):
     if args.record:
         record.release()
 
-    # Dump results
-    tracer.dump()
-
 
 if __name__ == "__main__":
     # Handle the arguments

@@ -1,0 +1,7 @@
+__pycache__
+*.mp4
+data/ctrl6_72h
+*.avi
+.vscode
+
+results.txt
